@@ -66,17 +66,17 @@ requestAsync({ url: baseUrl + '/insight-api-dash/addr/:addr/utxo'.replace(':addr
   // TODO sort for efficiency (try to not make change)
   // the smallest amount that is greater than the sum + fee
   // or the most change used without incurring a greater fee
-  resp.body.forEach(function (uxto) {
+  resp.body.forEach(function (utxo) {
     var fee1;
     var ft;
-    if (uxto.confirmations < 6) {
+    if (utxo.confirmations < 6) {
       return false;
     }
     if (firstTime) {
       ft = true;
       firstTime = false;
-      inputs.push(uxto);
-      tx.from(uxto);
+      inputs.push(utxo);
+      tx.from(utxo);
     }
     bytes = (148 * (inputs.length || 1)) + (34 * count) + 10;
     //fee1 = instant * bytes * perKbFee;
@@ -88,10 +88,10 @@ requestAsync({ url: baseUrl + '/insight-api-dash/addr/:addr/utxo'.replace(':addr
     }
     fee = fee1;
     if (!ft) {
-      inputs.push(uxto);
-      tx.from(uxto);
+      inputs.push(utxo);
+      tx.from(utxo);
     }
-    sum += uxto.satoshis; // Math.round(uxto.amount * satoshio);
+    sum += utxo.satoshis; // Math.round(utxo.amount * satoshio);
   });
   total = (giveaway * count) + fee;
   if (sum < total) {
