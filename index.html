@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <title>Dash AirDrop</title>
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap-spacelab-3.3.7.min.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Dash Airdrop</h1>
+
+      <div>
+        <h2>0. Config</h2>
+        <label>Insight API:</label>
+        <input type="url" class="js-insight-base form-control"
+          placeholder="ex: https://api.example.com/insight-api-dash/">
+      </div>
+
+      <div>
+        <h2>1. Generate or Paste Wallets</h2>
+        <label>Paste Public Keys:</label>
+        <textarea class="js-dst-public-keys form-control"
+          placeholder="hint: use newlines, spaces, or commas to separate keys"></textarea>
+        <input type="text" class="js-airdrop-count-input form-control"
+          placeholder="ex: 10">
+        <button class="js-airdrop-generate btn btn-primary">Generate <span class="js-airdrop-count">10</span> Dash Wallets</button>
+      </div>
+
+      <div>
+        <h2>2. Load Wallets with Dash</h2>
+        <label>Source Private Key (with all the money):</label>
+        <input type="text" class="js-src-private-key form-control"
+          placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
+        <label>Amount of Dash to load on each Wallet:</label>
+        <input type="text" class="js-airdrop-amount form-control"
+          placeholder="ex: 0.03 (about $25)">
+        <button class="js-airdrop-load btn btn-primary">Load <span class="js-airdrop-count">20</span> Dash Wallets with <span class="js-airdrop-amount">0.03</span> Dash each.</button>
+      </div>
+
+      <div>
+        <h2>4. Reclaim Fully-loaded Wallets</h2>
+        <label>Paste Private Keys:</label>
+        <textarea class="js-dst-private-keys form-control"
+          placeholder="hint: use newlines, spaces, or commas to separate keys"></textarea>
+        <button class="js-airdrop-inspect btn btn-primary">Check Balances</button>
+        <button class="js-airdrop-reclaim btn btn-primary">Reclaim Dash</button>
+      </div>
+
+    </div>
+    <script src="js/bitcore-lib-dash.min.js"></script>
+    <script src="js/jquery-3.2.1.slim.min.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
