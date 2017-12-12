@@ -21,19 +21,28 @@ $(function () {
   //
   // Insight Base URL
   //
-  $('.js-insight-base-input').val(config.insightBaseUrl);
-  $('body').on('change', '.js-insight-base-input', function () {
-    config.insightBaseUrl = $('.js-insight-base-input').val().replace(/\/+$/, '');
-    $('.js-insight-base').text(config.insightBaseUrl);
+  $('.js-insight-base').val(config.insightBaseUrl);
+  $('body').on('change', '.js-insight-base', function () {
+    config.insightBaseUrl = $('.js-insight-base').val().replace(/\/+$/, '');
+    //$('.js-insight-base').text(config.insightBaseUrl);
   });
 
   //
   // Generate Wallets
   //
   $('body').on('change', '.js-dst-public-keys', function () {
-    data.publicKeys = $('.js-dst-public-keys').val().split(/[,\n\r\s]+/mg);
+    data.publicKeys = $('.js-dst-public-keys').val().trim().split(/[,\n\r\s]+/mg);
+    $('.js-dst-public-keys').val(data.publicKeys.join('\n'));
+
+    $('.js-airdrop-count').val(data.publicKeys.length);
+    $('.js-airdrop-count').text(data.publicKeys.length);
     console.log('public keys:', data.publicKeys);
+
     // TODO store in localStorage
+  });
+  $('body').on('change', '.js-airdrop-count', function () {
+    var count = $('.js-airdrop-count').val();
+    $('.js-airdrop-count').text(count);
   });
   $('body').on('click', '.js-airdrop-generate', function () {
     var count = $('.js-airdrop-count').val();
@@ -45,7 +54,7 @@ $(function () {
     for (i = 0; i < count; i += 1) {
       keypair = new bitcore.PrivateKey();
       data.privateKeys.push( keypair.toWIF() );
-      data.publicKeys.push( keypair.toAddress.toString() );
+      data.publicKeys.push( keypair.toAddress().toString() );
     }
 
     $('.js-dst-public-keys').val(data.publicKeys.join('\n'));
