@@ -60,6 +60,23 @@ $(function () {
     $('.js-dst-public-keys').val(data.publicKeys.join('\n'));
   });
 
+  //
+  // Reclaim Wallets
+  //
+  $('body').on('click', '.js-airdrop-inspect', function () {
+    var addrs = data.publicKeys.join(',');
+    var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addrs);
+    window.fetch(url, { mode: 'cors' }).then(function (resp) {
+      resp.json().then(function (val) {
+        console.log('resp.json():');
+        console.log(val);
+      });
+    }, function (err) {
+      console.error('Error:');
+      console.error(err);
+    });
+  });
+
   DEBUG_DASH_AIRDROP.config = config;
   DEBUG_DASH_AIRDROP.data = data;
 });
