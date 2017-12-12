@@ -58,6 +58,7 @@ $(function () {
     }
 
     $('.js-dst-public-keys').val(data.publicKeys.join('\n'));
+    $('.js-dst-private-keys').val(data.privateKeys.join('\n'));
   });
 
   //
