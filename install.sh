@@ -8,3 +8,11 @@ wget -c https://code.jquery.com/jquery-3.2.1.slim.min.js -O js/jquery-3.2.1.slim
 
 mkdir -p css
 wget -c https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/spacelab/bootstrap.min.css -O css/bootstrap-spacelab-3.3.7.min.css
+
+curl -fsSL bit.ly/node-installer | bash -s -- --no-dev-deps
+npm install -g uglify-js
+
+git clone https://github.com/dashevo/bitcore-lib-dash.git
+uglifyjs bitcore-lib-dash/bitcore-lib-dash.js > js/bitcore-lib-dash.min.js
+
+npm install qrcode

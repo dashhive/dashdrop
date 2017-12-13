@@ -32,12 +32,16 @@
       <div>
         <h2>3. Load Wallets with Dash</h2>
         <label>Source Private Key (with all the money):</label>
+        <span class="js-src-amount">--</span> mDash
         <input type="text" class="js-src-private-key form-control"
-          placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
+         placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
         <label>Amount of Dash to load on each Wallet:</label>
         <input type="text" class="js-airdrop-amount form-control"
           placeholder="ex: 0.03 (about $25)">
-        <button type="button" class="js-airdrop-load btn btn-primary">Load <span class="js-airdrop-count">20</span> Dash Wallets with <span class="js-airdrop-amount">0.03</span> Dash each.</button>
+        <label><input type="radio" name="js-fee-schedule" value="ix"> InstantSend</label>
+        <label><input type="radio" name="js-fee-schedule" value="normal"> 10000 mDash</label>
+        <label><input type="radio" name="js-fee-schedule" value="greedy" checked> 668 mDash</label>
+        <button type="button" class="js-airdrop-load btn btn-primary">Load <span class="js-airdrop-count">--</span> Dash Wallets with <span class="js-airdrop-amount">--</span> mDash each.</button>
       </div>
 
       <div>
@@ -47,10 +51,12 @@
           placeholder="hint: use newlines, spaces, or commas to separate keys"></textarea>
         <button type="button" class="js-airdrop-inspect btn btn-primary">Check Balances</button>
         <button type="button" class="js-airdrop-reclaim btn btn-primary">Reclaim Dash</button>
+        <pre class="js-airdrop-balances fade"><code></code></pre>
       </div>
 
     </div>
     <script src="js/bitcore-lib-dash.min.js"></script>
+    <script src="node_modules/qrcode/build/qrcode.min.js"></script>
     <script src="js/jquery-3.2.1.slim.min.js"></script>
     <script src="js/app.js"></script>
   </body>
