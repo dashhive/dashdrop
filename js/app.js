@@ -5,6 +5,7 @@ $(function () {
   var config = {
     insightBaseUrl: 'https://api.dashdrop.coolaj86.com/insight-api-dash'
   , numWallets: 10
+  , fee: 1000 // 1000 // 0 seems to give the "insufficient priority" error
   };
   var data = {
     publicKeys: [ "XxgsFAhob6q8LuhsSWw7EDeYuU5ksmdnbr" ]
@@ -35,7 +36,7 @@ $(function () {
     if ('undefined' !== typeof opts.fee) {
       tx.fee(opts.fee);
     }
-    return tx.sign(new bitcore.PrivateKey(opts.src)).serialize();
+    return tx.sign(new bitcore.PrivateKey(opts.src)).serialize({ disableDustOutputs: true, disableSmallFees: true });
   };
 
   // opts = { srcs, dst, fee }
@@ -115,18 +116,42 @@ $(function () {
   //
   // Generate Wallets
   //
+  DashDom._getWallets = function () {
+    var i;
+    var len = localStorage.length;
+    var key;
+    var wallets = [];
+
+    for (i = 0; i < len; i += 1) {
+      key = localStorage.key(i);
+      if (/^dash:/.test(key)) {
+        wallets.push(key.replace(/^dash:/, ''));
+      }
+    }
+
+    return wallets;
+  };
   DashDom.generateWallets = function () {
+    data.privateKeys = DashDom._getWallets().filter(function (key) {
+      var val = parseInt(localStorage.getItem('dash:' + key), 10);
+      if (!val) {
+        return true;
+      }
+    });
     config.numWallets = $('.js-airdrop-count').val();
     var i;
     var keypair;
 
-    data.privateKeys = [];
     data.publicKeys = [];
-    for (i = 0; i < config.numWallets; i += 1) {
+    for (i = data.privateKeys.length; i < config.numWallets; i += 1) {
       keypair = new bitcore.PrivateKey();
       data.privateKeys.push( keypair.toWIF() );
-      data.publicKeys.push( keypair.toAddress().toString() );
     }
+    data.privateKeys = data.privateKeys.slice(0, config.numWallets);
+    data.privateKeys.forEach(function (wif) {
+      keypair = new bitcore.PrivateKey(wif);
+      data.publicKeys.push( keypair.toAddress().toString() );
+    });
 
     $('.js-dst-public-keys').val(data.publicKeys.join('\n'));
     $('.js-dst-private-keys').val(data.privateKeys.join('\n'));
@@ -193,9 +218,11 @@ $(function () {
             data.sum += utxo.satoshis;
           }
         });
+        //data.liquid = Math.round(Math.floor((data.sum - config.fee)/1000)*1000);
+        data.liquid = data.sum - config.fee;
         $('.js-src-amount').text(data.sum);
         if (!data.amount) {
-          data.amount = Math.floor(data.sum/config.numWallets);
+          data.amount = Math.floor(data.liquid/config.numWallets);
           $('.js-airdrop-amount').val(data.amount);
           $('.js-airdrop-amount').text(data.amount);
         }
@@ -219,30 +246,48 @@ $(function () {
     $('.js-src-private-key').val(data.wif);
     DashDom.updatePrivateKey();
   }
+  $('[name=js-fee-schedule]').val(config.fee);
   $('body').on('change', '.js-src-private-key', DashDom.updatePrivateKey);
   $('body').on('change', '.js-airdrop-amount', DashDom.updateAirdropAmount);
   $('body').on('click', '.js-airdrop-load', function () {
+    /*
     data.privateKeys.forEach(function (sk) {
       var amount = parseInt(localStorage.getItem('dash:' + sk), 10) || 0;
       localStorage.setItem('dash:' + sk, amount);
     });
+    */
 
-    var tx = DashDrop.load({
+    var rawTx = DashDrop.load({
       utxos: data.utxos
     , src: data.wif
     , dsts: data.privateKeys.slice()
     , amount: data.amount
-    , fee: data.fee || 0
+    , fee: config.fee
     });
     console.log('transaction:');
-    console.log(tx);
+    console.log(rawTx);
 
-    /*
+    var restTx = {
+      url: config.insightBaseUrl + '/tx/send'
+    , method: 'POST'
+    , headers: {
+        'Content-Type': 'application/json' //; charset=utf-8
+      }
+    , body: JSON.stringify({ rawtx: rawTx })
+    };
+
+    // TODO don't keep those which were not filled
     data.privateKeys.forEach(function (sk) {
       var amount = parseInt(localStorage.getItem('dash:' + sk), 10) || 0;
       localStorage.setItem('dash:' + sk, amount + data.amount);
     });
-    */
+
+    return window.fetch(restTx.url, restTx).then(function (resp) {
+      resp.json().then(function (result) {
+        console.log('result:');
+        console.log(result);
+      });
+    });
   });
 
   //
