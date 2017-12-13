@@ -60,7 +60,7 @@ $(function () {
     total = sum;
 
     if ('undefined' !== typeof opts.fee) {
-      if (utxos.length > 1) {
+      if (opts.utxos.length > 1) {
         // I'm not actually sure what the fee schedule is, but this worked for me
         opts.fee = Math.max(opts.fee, 2000);
       }
@@ -204,6 +204,10 @@ $(function () {
         arr.forEach(function (utxo) {
           if (utxo.confirmations >= 6) {
             data.sum += utxo.satoshis;
+          } else {
+            if (window.confirm("Transaction has not had 6 confirmations yet. Continue?")) {
+              data.sum += utxo.satoshis;
+            }
           }
         });
         //data.liquid = Math.round(Math.floor((data.sum - config.fee)/1000)*1000);
@@ -282,7 +286,7 @@ $(function () {
   // Reclaim Wallets
   //
   $('body').on('click', '.js-airdrop-inspect', function () {
-    var addrs = DashDom._getWallets().filter(DashDom._hasBalance).map(DashDrop._toAddress);
+    var addrs = DashDom._getWallets().filter(DashDom._hasBalance).map(DashDrop._toAddress).concat(data.publicKeys);
     var addrses = [];
     var ledger = '';
 
