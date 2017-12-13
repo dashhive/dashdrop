@@ -147,11 +147,12 @@ $(function () {
     data.publicKeysMap = {};
     data.privateKeys = [];
     $('.js-dst-public-keys').val().trim().split(/[,\n\r\s]+/mg).forEach(function (key) {
+      key = key.replace(/.*"7/, '7').replace(/".*/, '');
       if (34 === key.length) {
         data.publicKeysMap[key] = true;
         data.publicKeys.push(key);
         console.log('addr', key);
-      } else if (52 === key.length) {
+      } else if (52 === key.length || 51 === key.length) {
         data.privateKeys.push(key);
         console.log('skey', key);
       } else {
