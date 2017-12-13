@@ -157,6 +157,7 @@ $(function () {
         data.publicKeys.push(key);
         console.log('addr', key);
       } else if (52 === key.length || 51 === key.length) {
+        localStorage.setItem('dash:' + key, -1);
         data.privateKeys.push(key);
         console.log('skey', key);
       } else {
