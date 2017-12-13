@@ -17,9 +17,13 @@ $(function () {
   var addr = privateKey.toAddress.toString();
 
   var DashDom = {};
+  DashDom._hasBalance = function (pk) {
+    return parseInt(localStorage.getItem('dash:' + pk), 10);
+  };
+
   var DashDrop = {};
   DashDrop._toAddress = function (sk) {
-    return ;//.toString();
+    return new bitcore.PrivateKey(sk).toAddress().toString();
   };
 
   // opts = { uxto, src, dsts, amount, fee }
@@ -154,7 +158,7 @@ $(function () {
     });
 
     $('.js-dst-public-keys').val(data.publicKeys.join('\n'));
-    $('.js-dst-private-keys').val(data.privateKeys.join('\n'));
+    $('.js-dst-private-keys').val(DashDom._getWallets().join('\n'));
   };
 
   $('.js-airdrop-count').val(config.numWallets);
@@ -294,23 +298,41 @@ $(function () {
   // Reclaim Wallets
   //
   $('body').on('click', '.js-airdrop-inspect', function () {
-    var addrs = data.publicKeys.join(',');
-    var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addrs);
-    window.fetch(url, { mode: 'cors' }).then(function (resp) {
-      resp.json().then(function (val) {
-        var ledger = '';
-        console.log('resp.json():');
-        console.log(val);
-        val.forEach(function (v) {
-          ledger += v.address + ' ' + v.satoshis + ' (*' + v.confirmations + ')' + '\n';
+    var addrs = DashDom._getWallets().filter(DashDom._hasBalance).map(DashDrop._toAddress);
+    var addrses = [];
+    var ledger = '';
+
+    while (addrs.length) {
+      addrses.push(addrs.splice(0, 10));
+    };
+
+    function done() {
+      $('.js-airdrop-balances code').text(ledger);
+      $('.js-airdrop-balances').addClass('in');
+    }
+
+    function nextBatch(addrs) {
+      if (!addrs) {
+        done();
+        return;
+      }
+      var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addrs.join(','));
+      window.fetch(url, { mode: 'cors' }).then(function (resp) {
+        resp.json().then(function (val) {
+          console.log('resp.json():');
+          console.log(val);
+          val.forEach(function (v) {
+            ledger += v.address + ' ' + v.satoshis + ' (*' + v.confirmations + ')' + '\n';
+          });
+
+          nextBatch(addrses.shift());
         });
-        $('.js-airdrop-balances code').text(ledger);
-        $('.js-airdrop-balances').addClass('in');
+      }, function (err) {
+        console.error('Error:');
+        console.error(err);
       });
-    }, function (err) {
-      console.error('Error:');
-      console.error(err);
-    });
+    }
+    nextBatch(addrses.shift());
   });
 
   DEBUG_DASH_AIRDROP.config = config;
