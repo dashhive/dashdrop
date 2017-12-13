@@ -6,9 +6,12 @@ $(function () {
     insightBaseUrl: 'https://api.dashdrop.coolaj86.com/insight-api-dash'
   , numWallets: 10
   , fee: 1000 // 1000 // 0 seems to give the "insufficient priority" error
+  , serialize: { disableDustOutputs: true, disableSmallFees: true }
   };
   var data = {
-    publicKeys: [ "XxgsFAhob6q8LuhsSWw7EDeYuU5ksmdnbr" ]
+    publicKeys: []
+  , claimableMap: {}
+  , claimable: []
   };
 
   var bitcore = require('bitcore-lib-dash');
@@ -26,7 +29,7 @@ $(function () {
     return new bitcore.PrivateKey(sk).toAddress().toString();
   };
 
-  // opts = { uxto, src, dsts, amount, fee }
+  // opts = { utxo, src, dsts, amount, fee }
   DashDrop.load = function (opts) {
     var tx = new bitcore.Transaction();
 
@@ -43,64 +46,39 @@ $(function () {
     return tx.sign(new bitcore.PrivateKey(opts.src)).serialize({ disableDustOutputs: true, disableSmallFees: true });
   };
 
-  // opts = { srcs, dst, fee }
+  // opts = { utxos, srcs, dst, fee }
   DashDrop.claim = function (opts) {
     var tx = new bitcore.Transaction();
-    var inputs = [];
-    console.log('Instant Send Fee (per input):', 0.001 * satoshio);
-    // NOTE: In dash the fee is 0.001 per input according to
-    // https://github.com/dashevo/insight-api-dash#instantsend-transactions
-    //var perKbFee = Math.round(0.00001 * satoshio);
-    //var instant = 1; // 1 = off, 10 = on
-    var bytes;
-    var fee;
-    var firstTime = true;
+    var addr;
+    var sum = 0;
     var total;
 
-    addresses.forEach(function (privateKey) {
-      tx.to(privateKey.toAddress(), giveaway);
+    opts.utxos.forEach(function (utxo) {
+      sum += utxo.satoshis;
+      tx.from(utxo);
     });
-    tx.change(genKeyPair().toAddress());
-    // TODO sort for efficiency (try to not make change)
-    // the smallest amount that is greater than the sum + fee
-    // or the most change used without incurring a greater fee
-    resp.body.forEach(function (utxo) {
-      var fee1;
-      var ft;
-      if (utxo.confirmations < 6) {
-        return false;
-      }
-      if (firstTime) {
-        ft = true;
-        firstTime = false;
-        inputs.push(utxo);
-        tx.from(utxo);
-      }
-      bytes = (148 * (inputs.length || 1)) + (34 * count) + 10;
-      //fee1 = instant * bytes * perKbFee;
-      fee1 = tx.getFee();
-      console.log('fee1', fee1);
-      if (sum >= (giveaway * count) + fee1) {
-        console.log(inputs.length + ' input(s) will cover it');
-        return true;
-      }
-      fee = fee1;
-      if (!ft) {
-        inputs.push(utxo);
-        tx.from(utxo);
-      }
-      sum += utxo.satoshis; // Math.round(utxo.amount * satoshio);
-    });
-    total = (giveaway * count) + fee;
-    if (sum < total) {
-      throw new Error("not enough money!");
+    total = sum;
+
+    if ('undefined' !== typeof opts.fee) {
+      sum -= opts.fee;
+      tx.fee(opts.fee);
     }
-    console.log('sources total:', sum);
-    console.log('to be spent:', total);
-    console.log('change:', sum - total);
-    console.log('transaction:');
-    var rawTx = tx.sign(privateKey).serialize();
-    console.log(rawTx);
+
+    if (52 === opts.dst.length || 51 === opts.dst.length) {
+      addr = new bitcore.PrivateKey(opts.dst).toAddress();
+    } else if (34 === opts.dst.length) {
+      addr = new bitcore.Address(opts.dst);
+    } else {
+      throw new Error('unexpected key format');
+    }
+    //tx.to(addr);
+    tx.change(addr);
+
+    opts.srcs.forEach(function (sk) {
+      tx.sign(new bitcore.PrivateKey(sk));
+    });
+
+    return tx.serialize({ disableDustOutputs: true, disableSmallFees: true });
   };
 
   console.log('New Key:');
@@ -318,11 +296,21 @@ $(function () {
       }
       var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addrs.join(','));
       window.fetch(url, { mode: 'cors' }).then(function (resp) {
-        resp.json().then(function (val) {
+        resp.json().then(function (utxos) {
           console.log('resp.json():');
-          console.log(val);
-          val.forEach(function (v) {
-            ledger += v.address + ' ' + v.satoshis + ' (*' + v.confirmations + ')' + '\n';
+          console.log(utxos);
+          utxos.forEach(function (utxo) {
+            if (utxo.confirmations >= 6) {
+              ledger += utxo.address + ' ' + utxo.satoshis + ' (' + utxo.confirmations + '+ confirmations)' + '\n';
+            } else {
+              ledger += utxo.address + ' ' + utxo.satoshis + ' (~' + utxo.confirmations + ' confirmations)' + '\n';
+            }
+            if (utxo.confirmations >= 6 && utxo.satoshis) {
+              if (!data.claimableMap[utxo.address + utxo.txid]) {
+                data.claimableMap[utxo.address + utxo.txid] = true;
+                data.claimable.push(utxo);
+              }
+            }
           });
 
           nextBatch(addrses.shift());
@@ -333,6 +321,20 @@ $(function () {
       });
     }
     nextBatch(addrses.shift());
+  });
+
+  $('body').on('click', '.js-airdrop-reclaim', function () {
+    var txObj = {
+      utxos: data.claimable
+    , srcs: DashDom._getWallets()
+    , dst: data.addr || data.wif
+    , fee: config.fee
+    };
+    var rawTx = DashDrop.claim(txObj);
+
+    console.log('reclaim rawTx:');
+    console.log(txObj);
+    console.log(rawTx);
   });
 
   DEBUG_DASH_AIRDROP.config = config;
