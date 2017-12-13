@@ -60,7 +60,11 @@ $(function () {
     total = sum;
 
     if ('undefined' !== typeof opts.fee) {
-      sum -= opts.fee;
+      if (utxos.length > 1) {
+        // I'm not actually sure what the fee schedule is, but this worked for me
+        opts.fee = Math.max(opts.fee, 2000);
+      }
+      sum -= (opts.fee);
       tx.fee(opts.fee);
     }
 
@@ -336,6 +340,30 @@ $(function () {
     console.log('reclaim rawTx:');
     console.log(txObj);
     console.log(rawTx);
+
+    var restTx = {
+      url: config.insightBaseUrl + '/tx/send'
+    , method: 'POST'
+    , headers: {
+        'Content-Type': 'application/json' //; charset=utf-8
+      }
+    , body: JSON.stringify({ rawtx: rawTx })
+    };
+
+    return window.fetch(restTx.url, restTx).then(function (resp) {
+      resp.json().then(function (result) {
+        console.log('result:');
+        console.log(result);
+
+        // TODO demote these once the transactions are confirmed?
+        /*
+        data.privateKeys.forEach(function (sk) {
+          localStorage.removeItem('dash:' + sk);
+          localStorage.setItem('spent-dash:' + sk, 0);
+        });
+        */
+      });
+    });
   });
 
   DEBUG_DASH_AIRDROP.config = config;
