@@ -1,5 +1,5 @@
-Dash AirDrop
-============
+DashDrop
+========
 
 The tool helps track the status of paper wallet give-aways, "airdrops".
 
