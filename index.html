@@ -2,9 +2,14 @@
   <head>
     <title>DashDrop™ by DashHive</title>
     <link rel="stylesheet" type="text/css" href="./css/bootstrap-spacelab-3.3.7.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/dashdrop.css">
+    <link rel="stylesheet" media="print" href="https://cdnjs.cloudflare.com/ajax/libs/paper-css/0.3.0/paper.css">
+    <link rel="stylesheet" media="print" href="./css/print.css">
+		<style>@page { size: A4 }</style>
   </head>
+
   <body>
-    <div class="container">
+    <div class="dd-screen-only container">
       <h1>DashDrop™</h1>
 
 
@@ -84,9 +89,9 @@
               <div class="col-md-6">
                 <p>Measure Outreach</p>
                 <div>
-                  x% claimed, $5.2k spread
+                  x% claimed, $x.xk spread
                   <br/>
-                  257 new Dash users
+                  x new Dash users
                 </div>
               </div>
               <div class="col-md-6">
@@ -109,7 +114,7 @@
             <h2>Import Existing</h2>
             <button class="btn btn-primary" disabled>upload .csv</button>
             <br>
-            <a class="js-csv-toggle btn btn-link">paste csv</a> (<a class="js-csv-example btn btn-link">see example</a>)
+            <a class="js-csv-show btn btn-link">paste csv</a> (<a class="js-csv-example btn btn-link">see example</a>)
           </div>
           <div class="col-md-2">
             <br>
@@ -120,12 +125,12 @@
           <div class="col-md-5">
             <h2>Generate New</h2>
             <input type="number"
-              class="js-wallet-count js-airdrop-count form-control"
+              class="js-paper-wallet-quantity form-control"
               placeholder="ex: 10">
             <button type="button" class="js-paper-wallet-generate btn btn-primary">Generate</button>
           </div>
         </div>
-        <div class="row js-csv-view">
+        <div class="row js-csv-view hidden">
           <div class="col-md-12">
             <label>Paper Wallet Public Keys:</label>
             <textarea class="js-paper-wallet-keys form-control"
@@ -133,39 +138,51 @@
             <button class="js-csv-hide btn btn-link">hide csv</button>
           </div>
         </div>
-        <div class="row">
-          <div class="col-md-2">public QR code here</div>
-          <div class="col-md-8">wallet logo here</div>
-          <div class="col-md-2">private QR code here</div>
+        <div class="row dd-backdrop">
+          <div class="col-md-5"><br><br><br>public QR code here<br><br><br></div>
+          <div class="col-md-5"><br><br><br>wallet logo here<br><br><br></div>
+          <div class="col-md-2"><br><br><br>private QR code here<br><br><br></div>
         </div>
         <div class="row">
           <div class="col-md-12">
             <button class="js-paper-wallet-print btn btn-primary pull-right">Print</button>
-            <button class="js-csv-download btn btn-primary pull-right">Download .csv</button>
+            <button class="js-csv-download btn btn-primary pull-right" disabled>Download .csv</button>
             <button class="js-csv-show btn btn-link">show csv</button>
           </div>
         </div>
         <div class="row">
-          <div class="col-md-12">
+          <div class="col-md-9">
             <label>Source Private Key (with all the money):</label>
-            <span class="js-src-amount">--</span> mDash
+            <span class="js-funding-amount">--</span> mDash
             <input type="text" class="js-funding-key form-control"
              placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
-            <label>Amount of Dash to load on each Wallet:</label>
-            <input type="text" class="js-airdrop-amount form-control"
+          </div>
+          <div class="col-md-3">
+            <label>Amount per Wallet:</label>
+            <input type="text" class="js-paper-wallet-amount form-control"
               placeholder="ex: 3000000 (about $25)">
+            <!--
             <label><input type="radio" name="js-fee-schedule" value="100000"> InstantSend</label>
             <label><input type="radio" name="js-fee-schedule" value="10000"> 10000 mDash</label>
             <label><input type="radio" name="js-fee-schedule" value="1000" checked> 1000 mDash</label>
-            <label>Insight API:</label>
+            -->
+            <br>
+            <label>Per Transaction Fee</label>
+            <input type="text" class="js-paper-wallet-fee form-control">
+            <br>
+            <label>Number of Transactions:</label>
+            <input type="text" class="js-paper-wallet-quantity form-control">
           </div>
-          <div class="col-md-12">
+        </div>
+        <div class="row">
+          <div class="col-md-9">
+            <label>Insight API:</label>
             <input type="url" class="js-insight-base form-control"
-              placeholder="ex: https://api.example.com/insight-api-dash/">
-            <label><input type="checkbox" class="js-paper-wallet-save"> Save Wallets</label>
-            <button type="button" class="js-airdrop-load btn btn-primary">Load
-              <span class="js-airdrop-count">--</span> Dash Wallets with <span class="js-airdrop-amount">--</span>
-              mDash each.</button>
+              placeholder="ex: https://api.example.com/insight-api-dash">
+          </div>
+          <div class="col-md-3">
+            <label><input type="checkbox" class="js-paper-wallet-save"> Cache Generated Wallets In-App</label>
+            <button type="button" class="js-paper-wallet-commit btn btn-primary">Confirm Transactions</button>
           </div>
         </div>
       </div>
@@ -192,7 +209,7 @@
             <button type="button" class="js-csv-toggle btn btn-link">Paste CSV</button>
           </div>
         </div>
-        <div class="row js-csv-view">
+        <div class="row js-csv-view hidden">
           <div class="col-md-12">
             <label>Paper Wallet Private Keys:</label>
             <textarea class="js-paper-wallet-keys form-control"
@@ -227,7 +244,7 @@
           <div class="col-md-12">
             <label>Insight API:</label>
             <input type="url" class="js-insight-base form-control"
-              placeholder="ex: https://api.example.com/insight-api-dash/">
+              placeholder="ex: https://api.example.com/insight-api-dash">
             <button type="button" class="js-reclaim-confirm btn btn-primary" disabled>Confirm Reclaim</button>
             <br>
             <label><input type="radio" name="js-fee-schedule" value="100000"> InstantSend</label>
@@ -239,31 +256,33 @@
 
 
 
-      <div class="row">
-        <div class="col-md-12">
-          <h2>Developer Tools</h2>
-          <label>Dash Insight API:</label>
-          <input type="text" placeholder="i.e. https://api.example.com/insight">
+      <div class="dd-backdrop-dev">
+        <div class="row">
+          <div class="col-md-12">
+            <h2>Developer Tools</h2>
+            <label>Dash Insight API:</label>
+            <input type="text" placeholder="i.e. https://api.example.com/insight">
+          </div>
         </div>
-      </div>
-      <div class="row">
-        <div class="col-md-12">
-          <code><pre>curl -fsSL https://get.example.com/ | bash</pre></code>
+        <div class="row">
+          <div class="col-md-12">
+            <code><pre>curl -fsSL https://get.example.com/ | bash</pre></code>
+          </div>
         </div>
-      </div>
 
-      <div class="row">
-        <div class="col-md-3">
-          <code><pre>dashdrop fund -n 250 -o wallets.csv -s Xxxxx -a 0.05</pre></code>
-        </div>
-        <div class="col-md-3">
-          <code><pre>dashdrop generate -i wallets.csv -s Xxxxx -a 0.05</pre></code>
-        </div>
-        <div class="col-md-3">
-          <code><pre>dashdrop status -i wallets.csv</pre></code>
-        </div>
-        <div class="col-md-3">
-          <code><pre>dashdrop reclaim -i wallets.csv -p Xxx</pre></code>
+        <div class="row">
+          <div class="col-md-3">
+            <code><pre>dashdrop fund -n 250 -o wallets.csv -s Xxxxx -a 0.05</pre></code>
+          </div>
+          <div class="col-md-3">
+            <code><pre>dashdrop generate -i wallets.csv -s Xxxxx -a 0.05</pre></code>
+          </div>
+          <div class="col-md-3">
+            <code><pre>dashdrop status -i wallets.csv</pre></code>
+          </div>
+          <div class="col-md-3">
+            <code><pre>dashdrop reclaim -i wallets.csv -p Xxx</pre></code>
+          </div>
         </div>
       </div>
 
@@ -271,6 +290,23 @@
 
 
     </div>
+
+		<!-- Set "A5", "A4" or "A3" for class name -->
+		<!-- Set also "landscape" if you need -->
+		<div class="dd-print-only hidden A4">
+
+			<!-- Each sheet element should have the class "sheet" -->
+			<!-- "padding-**mm" is optional: you can set 10, 15, 20 or 25 -->
+			<section class="sheet padding-10mm">
+
+				<!-- Write HTML just like a web page -->
+				<article>
+          <pre><code class="js-paper-wallet-keys"></code></pre>
+        </article>
+
+			</section>
+
+		</div>
 
     <script src="js/bitcore-lib-dash.min.js"></script>
     <script src="node_modules/qrcode/build/qrcode.min.js"></script>

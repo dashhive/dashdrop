@@ -3,6 +3,8 @@ var DEBUG_DASH_AIRDROP = {};
 $(function () {
   'use strict';
 
+  var bitcore = require('bitcore-lib-dash');
+
   var exampleCsv = [
     '# = 4'
   , '"XjSBXfiAUdrGDJ8TYzSBc2Z5tjexAZao4Q", "7reAg9R74ujxxSj34jpbRpPhfsPt9ytAh3acMehhs1CmfoGFHbh"'
@@ -13,7 +15,7 @@ $(function () {
 
   var config = {
     insightBaseUrl: 'https://api.dashdrop.coolaj86.com/insight-api-dash'
-  , numWallets: 10
+  , numWallets: 100
   , fee: 1000 // 1000 // 0 seems to give the "insufficient priority" error
   , serialize: { disableDustOutputs: true, disableSmallFees: true }
   };
@@ -24,23 +26,12 @@ $(function () {
   , claimable: []
   };
 
-  var bitcore = require('bitcore-lib-dash');
-  var privateKey = new bitcore.PrivateKey();
-  var wif = privateKey.toWIF();
-  var addr = privateKey.toAddress.toString();
-
-  var DashDom = {};
-  DashDom._hasBalance = function (pk) {
-    return parseInt(localStorage.getItem('dash:' + pk), 10);
-  };
-
   var DashDrop = {};
   DashDrop._toAddress = function (sk) {
-    return new bitcore.PrivateKey(sk).toAddress().toString();
+    return sk.publicKey; //new bitcore.PrivateKey(sk).toAddress().toString();
   };
-
   // opts = { utxo, src, dsts, amount, fee }
-  DashDrop.load = function (opts) {
+  DashDrop.disburse = function (opts) {
     var tx = new bitcore.Transaction();
 
     opts.dsts.forEach(function (privateKey) {
@@ -95,72 +86,118 @@ $(function () {
     return tx.serialize({ disableDustOutputs: true, disableSmallFees: true });
   };
 
-  console.log('New Key:');
-  console.log('Share:', addr);
-  console.log('Secret:', wif);
-  console.log('');
+  var DashDom = {};
+  DashDom.views = {};
+  DashDom._hasBalance = function (pk) {
+    try {
+      return JSON.parse(localStorage.getItem('dash:' + (pk.publicKey || pk.privateKey))).amount;
+    } catch(e) {
+      return parseInt(localStorage.getItem('dash:' + (pk.publicKey || pk.privateKey)), 10);
+    }
+  };
+
 
   //
   // Insight Base URL
   //
-  $('.js-insight-base').val(config.insightBaseUrl);
-  $('body').on('change', '.js-insight-base', function () {
+  DashDom.updateInsightBase = function () {
     config.insightBaseUrl = $('.js-insight-base').val().replace(/\/+$/, '');
     //$('.js-insight-base').text(config.insightBaseUrl);
-  });
+  };
 
   //
   // Generate Wallets
   //
+  DashDrop._getKeypair = function (key) {
+    var obj = {};
+    if (34 === key.length) {
+      obj.publicKey = key;
+    } else if (52 === key.length || 51 === key.length) {
+      obj.privateKey = key;
+    } else {
+      return null;
+    }
+
+    return obj;
+  };
   DashDom._getWallets = function () {
     var i;
     var len = localStorage.length;
     var key;
     var wallets = [];
+    var dashkey;
+    var keypair;
 
     for (i = 0; i < len; i += 1) {
       key = localStorage.key(i);
       if (/^dash:/.test(key)) {
-        wallets.push(key.replace(/^dash:/, ''));
+        try {
+          keypair = JSON.parse(localStorage.getItem(key));
+        } catch(e) {
+          keypair = { amount: parseInt(localStorage.getItem(key), 10) };
+        }
+        dashkey = key.replace(/^dash:/, '');
+        keypair = DashDrop._getKeypair(dashkey);
+        if (!keypair) {
+          console.warn(dashkey);
+          return;
+        }
+        wallets.push(keypair);
       }
     }
 
     return wallets;
   };
   DashDom.generateWallets = function () {
-    data.privateKeys = DashDom._getWallets().filter(function (key) {
-      var val = parseInt(localStorage.getItem('dash:' + key), 10);
-      if (!val) {
-        return true;
-      }
+    console.log("generateWallets:");
+    data.keypairs = DashDom._getWallets().filter(function (keypair) {
+      if (keypair.privateKey && !keypair.amount) { return true; }
     });
-    config.numWallets = $('.js-airdrop-count').val();
+    config.numWallets = $('.js-paper-wallet-quantity').val();
     var i;
     var keypair;
 
-    data.publicKeys = [];
-    for (i = data.privateKeys.length; i < config.numWallets; i += 1) {
+    //data.privateKeys
+    data.csv = '# = ';
+    data.csv += data.keypairs.length;
+    for (i = data.keypairs.length; i < config.numWallets; i += 1) {
       keypair = new bitcore.PrivateKey();
-      data.privateKeys.push( keypair.toWIF() );
+      data.keypairs.push({
+        privateKey: keypair.toWIF()
+      , publicKey: keypair.toAddress().toString()
+      , amount: 0
+      });
     }
-    data.privateKeys = data.privateKeys.slice(0, config.numWallets);
-    data.privateKeys.forEach(function (wif) {
-      keypair = new bitcore.PrivateKey(wif);
-      data.publicKeys.push( keypair.toAddress().toString() );
-    });
+    data.keypairs = data.keypairs.slice(0, config.numWallets);
+    data.csv = data.keypairs.map(function (keypair, i) {
+      return i + JSON.stringify(keypair.publicKey), JSON.stringify(keypair.privateKey);
+    }).join("\n");
 
-    $('.js-paper-wallet-keys').val(data.publicKeys.join('\n'));
-    //$('.js-paper-wallet-keys').val(DashDom._getWallets().join('\n'));
+    $('.js-paper-wallet-keys').val(data.csv);
+    $('.js-paper-wallet-keys').text(data.csv);
   };
+  DashDom.updateWalletQuantity = function () {
+    var count = parseInt($('.js-paper-wallet-quantity').val(), 10);
+    if (data._count && data._count === count) {
+      return true;
+    }
+    data._count = count;
 
-  $('.js-airdrop-count').val(config.numWallets);
-  $('.js-airdrop-count').text(config.numWallets);
-  DashDom.generateWallets();
-  $('body').on('change', '.js-paper-wallet-keys', function () {
+    $('.js-paper-wallet-quantity').text(count);
+    return true;
+  };
+  DashDom.updateWalletCsv = function () {
+    var walletCsv = $('.js-paper-wallet-keys').val().trim();
+    if (data._walletCsv && data._walletCsv === walletCsv) {
+      return true;
+    }
+    data._walletCsv = walletCsv;
+
     data.publicKeys = [];
     data.publicKeysMap = {};
     data.privateKeys = [];
-    $('.js-paper-wallet-keys').val().trim().split(/[,\n\r\s]+/mg).forEach(function (key) {
+
+    data._walletCsv.split(/[,\n\r\s]+/mg).forEach(function (key) {
       key = key.replace(/.*"7/, '7').replace(/".*/, '');
       if (34 === key.length) {
         data.publicKeysMap[key] = true;
@@ -174,29 +211,24 @@ $(function () {
         console.error("Invalid Key:", key);
       }
     });
-    data.privateKeys.forEach(function (skey) {
-      var addr = new bitcore.PrivateKey(skey).toAddress().toString();
-      data.publicKeysMap[addr] = true;
+    data.keypairs.forEach(function (kp) {
+      data.publicKeysMap[kp.publicKey] = kp;
     });
     data.publicKeys = Object.keys(data.publicKeysMap);
 
     $('.js-paper-wallet-keys').val(data.publicKeys.join('\n'));
-    //$('.js-paper-wallet-keys').val(data.privateKeys.join('\n'));
+    $('.js-paper-wallet-keys').text(data.publicKeys.join('\n'));
 
-    $('.js-airdrop-count').val(data.publicKeys.length);
-    $('.js-airdrop-count').text(data.publicKeys.length);
+    $('.js-paper-wallet-quantity').val(data.publicKeys.length);
+    $('.js-paper-wallet-quantity').text(data.publicKeys.length);
     config.numWallets = data.publicKeys.length;
 
     console.log('private keys:', data.privateKeys);
     console.log('public keys:', data.publicKeys);
 
     // TODO store in localStorage
-  });
-  $('body').on('change', '.js-airdrop-count', function () {
-    var count = $('.js-airdrop-count').val();
-    $('.js-airdrop-count').text(count);
-  });
-  $('body').on('click', '.js-paper-wallet-generate', DashDom.generateWallets);
+  };
+
 
   //
   // Load Private Wallet
@@ -222,11 +254,11 @@ $(function () {
         });
         //data.liquid = Math.round(Math.floor((data.sum - config.fee)/1000)*1000);
         data.liquid = data.sum - config.fee;
-        $('.js-src-amount').text(data.sum);
+        $('.js-funding-amount').text(data.sum);
         if (!data.amount) {
           data.amount = Math.floor(data.liquid/config.numWallets);
-          $('.js-airdrop-amount').val(data.amount);
-          $('.js-airdrop-amount').text(data.amount);
+          $('.js-paper-wallet-amount').val(data.amount);
+          $('.js-paper-wallet-amount').text(data.amount);
         }
 
         DashDom.updateAirdropAmount();
@@ -235,23 +267,14 @@ $(function () {
   };
   DashDom.updateAirdropAmount = function () {
     var err;
-    data.amount = parseInt($('.js-airdrop-amount').val(), 10);
+    data.amount = parseInt($('.js-paper-wallet-amount').val(), 10);
     if (!data.sum || data.amount > data.sum) {
       err = new Error("Insufficient Funds: Cannot load " + data.amount + " mDash onto each wallet.");
       window.alert(err.message);
       throw err;
     }
   };
-
-  //data.wif = localStorage.getItem('private-key');
-  if (data.wif) {
-    $('.js-funding-key').val(data.wif);
-    DashDom.updatePrivateKey();
-  }
-  $('[name=js-fee-schedule]').val(config.fee);
-  $('body').on('change', '.js-funding-key', DashDom.updatePrivateKey);
-  $('body').on('change', '.js-airdrop-amount', DashDom.updateAirdropAmount);
-  $('body').on('click', '.js-airdrop-load', function () {
+  DashDom.commitDisburse = function () {
     /*
     data.privateKeys.forEach(function (sk) {
       var amount = parseInt(localStorage.getItem('dash:' + sk), 10) || 0;
@@ -259,10 +282,10 @@ $(function () {
     });
     */
 
-    var rawTx = DashDrop.load({
+    var rawTx = DashDrop.disburse({
       utxos: data.utxos
     , src: data.wif
-    , dsts: data.privateKeys.slice()
+    , dsts: data.keypairs.map(function (kp) { return kp.privateKey; }).filter(Boolean)
     , amount: data.amount
     , fee: config.fee
     });
@@ -279,9 +302,8 @@ $(function () {
     };
 
     // TODO don't keep those which were not filled
-    data.privateKeys.forEach(function (sk) {
-      var amount = parseInt(localStorage.getItem('dash:' + sk), 10) || 0;
-      localStorage.setItem('dash:' + sk, amount + data.amount);
+    data.keypair.forEach(function (kp) {
+      localStorage.setItem('dash:' + kp.publicKey, (kp.amount || 0) + data.amount);
     });
 
     return window.fetch(restTx.url, restTx).then(function (resp) {
@@ -290,27 +312,9 @@ $(function () {
         console.log(result);
       });
     });
-  });
-
-  //
-  // Reclaim Wallets
-  //
-  $('body').on('click', '.js-flow-generate', function () {
-    $('.js-flow').addClass('hidden');
-    $('.js-flow-generate').removeClass('hidden');
-    setTimeout(function () {
-      $('.js-flow-generate').addClass('in');
-    });
-  });
-  $('body').on('click', '.js-flow-reclaim', function () {
-    $('.js-flow').addClass('hidden');
-    $('.js-flow-reclaim').removeClass('hidden');
-    setTimeout(function () {
-      $('.js-flow-reclaim').addClass('in');
-    });
-  });
-  $('body').on('click', '.js-airdrop-inspect', function () {
-    var addrs = DashDom._getWallets().filter(DashDom._hasBalance).map(DashDrop._toAddress).concat(data.publicKeys);
+  };
+  DashDom.inspectWallets = function () {
+    var addrs = DashDom._getWallets().filter(DashDom._hasBalance).map(DashDrop._toAddress);
     var addrses = [];
     var ledger = '';
 
@@ -355,12 +359,12 @@ $(function () {
       });
     }
     nextBatch(addrses.shift());
-  });
-
-  $('body').on('click', '.js-airdrop-reclaim', function () {
+  };
+  DashDom.commitReclaim = function () {
     var txObj = {
       utxos: data.claimable
-    , srcs: DashDom._getWallets()
+    , srcs: DashDom._getWallets().map(function () {
+            })
     , dst: data.addr || data.wif
     , fee: config.fee
     };
@@ -393,7 +397,38 @@ $(function () {
         */
       });
     });
-  });
+  };
+  DashDom.print = function () {
+    window.print();
+  };
+  DashDom.showExampleCsv = function () {
+    view.csv.show();
+    $('.js-paper-wallet-keys').attr('placeholder', exampleCsv);
+  };
+  DashDom.showCsv = function () {
+    view.csv.show();
+    $('.js-paper-wallet-keys').removeAttr('placeholder');
+  };
+
+
+  //
+  // Reclaim Wallets
+  //
+  DashDom.views.generate = function () {
+    DashDom.generateWallets();
+    $('.js-flow').addClass('hidden');
+    $('.js-flow-generate').removeClass('hidden');
+    setTimeout(function () {
+      $('.js-flow-generate').addClass('in');
+    });
+  };
+  DashDom.views.reclaim = function () {
+    $('.js-flow').addClass('hidden');
+    $('.js-flow-reclaim').removeClass('hidden');
+    setTimeout(function () {
+      $('.js-flow-reclaim').addClass('in');
+    });
+  };
 
   var view = {};
   view.csv = {
@@ -413,18 +448,33 @@ $(function () {
     }
   };
 
+
+
+  $('body').on('click', 'button.js-flow-generate', DashDom.views.generate);
+  $('body').on('click', 'button.js-flow-reclaim', DashDom.views.reclaim);
+  $('body').on('click', '.js-airdrop-inspect', DashDom.inspectWallets);
+  $('body').on('click', '.js-airdrop-reclaim', DashDom.commitReclaim);
+  $('body').on('keyup', '.js-paper-wallet-keys', DashDom.updateWalletCsv);
+  $('body').on('keyup', '.js-paper-wallet-quantity', DashDom.updateWalletQuantity);
+  $('body').on('click', '.js-paper-wallet-generate', DashDom.generateWallets);
+  $('body').on('change', '.js-funding-key', DashDom.updatePrivateKey);
+  $('body').on('change', '.js-paper-wallet-amount', DashDom.updateAirdropAmount);
+  $('body').on('click', '.js-paper-wallet-commit', DashDom.commitDisburse);
   $('body').on('click', '.js-csv-hide', view.csv.hide);
-  $('body').on('click', '.js-csv-show', function () {
-    view.csv.show();
-    $('.js-paper-wallet-keys').removeAttr('placeholder');
-  });
-  $('body').on('click', '.js-csv-example', function () {
-    view.csv.show();
-    $('.js-paper-wallet-keys').attr('placeholder', exampleCsv);
-  });
-  $('body').on('click', '.js-paper-wallet-print', function () {
-    window.print();
-  });
+  $('body').on('click', '.js-csv-show', DashDom.showCsv);
+  $('body').on('click', '.js-csv-example', DashDom.showExampleCsv);
+  $('body').on('change', '.js-insight-base', DashDom.updateInsightBase);
+  $('body').on('click', '.js-paper-wallet-print', DashDom.print);
+
+
+  //
+  // Initial Values
+  //
+  $('.js-insight-base').val(config.insightBaseUrl);
+  $('.js-paper-wallet-quantity').val(config.numWallets);
+  $('.js-paper-wallet-quantity').text(config.numWallets);
+  $('[name=js-fee-schedule]').val(config.fee);
+
 
   DEBUG_DASH_AIRDROP.config = config;
   DEBUG_DASH_AIRDROP.data = data;
