@@ -45,11 +45,24 @@ $(function () {
     return sk.publicKey; //new bitcore.PrivateKey(sk).toAddress().toString();
   };
   // opts = { utxo, src, dsts, amount, fee }
+  DashDrop.estimateFee = function (opts) {
+    var tx = new bitcore.Transaction();
+
+    opts.dsts.forEach(function (publicKey) {
+      tx.to(new bitcore.Address(publicKey), opts.amount);
+    });
+    tx.change(new bitcore.PrivateKey(opts.src).toAddress());
+    opts.utxos.forEach(function (utxo) {
+      tx.from(utxo);
+    });
+
+    return tx.getFee();
+  };
   DashDrop.disburse = function (opts) {
     var tx = new bitcore.Transaction();
 
-    opts.dsts.forEach(function (privateKey) {
-      tx.to(new bitcore.PrivateKey(privateKey).toAddress(), opts.amount);
+    opts.dsts.forEach(function (publicKey) {
+      tx.to(new bitcore.Address(publicKey), opts.amount);
     });
     tx.change(new bitcore.PrivateKey(opts.src).toAddress());
     opts.utxos.forEach(function (utxo) {
@@ -215,15 +228,14 @@ $(function () {
   };
   DashDom.updateWalletQuantity = function () {
     var quantity = parseInt($('.js-paper-wallet-quantity').val(), 10);
-    console.log('1 updateWalletQuantity:', quantity);
     if (config.walletQuantity && config.walletQuantity === quantity) {
       return true;
     }
     config.walletQuantity = quantity;
-    console.log('2 updateWalletQuantity:', quantity);
 
     $('.js-paper-wallet-quantity').text(quantity);
-    DashDom.updateTransactionTotal();
+    //DashDom.updateTransactionTotal();
+    DashDom.generateWallets();
     return true;
   };
   DashDom.updateWalletCsv = function () {
@@ -293,7 +305,7 @@ $(function () {
       $('button.js-transaction-commit').prop('disabled', true);
     }
   };
-  DashDom.updatePrivateKey = function () {
+  DashDom.updateFundingKey = function () {
     data.fundingKey = $('.js-funding-key').val();
     //localStorage.setItem('private-key', data.wif);
     var addr = new bitcore.PrivateKey(data.fundingKey).toAddress().toString();
@@ -303,7 +315,7 @@ $(function () {
       resp.json().then(function (arr) {
         var cont;
         data.fundingTotal = 0;
-        data.utxos = arr;
+        data.fundingUtxos = arr;
         arr.forEach(function (utxo) {
           if (utxo.confirmations >= 6) {
             data.fundingTotal += utxo.satoshis;
@@ -319,14 +331,20 @@ $(function () {
             }
           }
         });
-        //data.liquid = Math.round(Math.floor((data.sum - config.fee)/1000)*1000);
-        data.liquid = data.fundingTotal - config.transactionFee;
+
+        var txOpts = {
+          src: data.fundingKey
+        , dsts: data.keypairs.slice(0, 10).map(function (kp) { return kp.publicKey })
+        , amount: config.walletAmount
+        , utxos: data.fundingUtxos
+        };
+        config.transactionFee = DashDrop.estimateFee(txOpts);
+
+        $('.js-transaction-fee').val(config.transactionFee);
+        $('.js-transaction-fee').text(config.transactionFee);
+
+        $('.js-funding-amount').val(data.fundingTotal);
         $('.js-funding-amount').text(data.fundingTotal);
-        if (!config.walletAmount) {
-          config.walletAmount = Math.floor(data.liquid/config.walletQuantity);
-          $('.js-paper-wallet-amount').val(config.walletAmount);
-          $('.js-paper-wallet-amount').text(config.walletAmount);
-        }
 
         DashDom.updateWalletAmount();
       });
@@ -334,24 +352,33 @@ $(function () {
   };
   DashDom.updateWalletAmount = function () {
     var walletAmount = parseInt($('.js-paper-wallet-amount').val(), 10);
+
+    if (!config.walletAmount && !walletAmount) {
+      config.walletAmount = Math.floor(
+        (data.fundingTotal - (config.transactionCount * config.transactionFee)) / config.walletQuantity
+      );
+      $('.js-paper-wallet-amount').val(config.walletAmount);
+      $('.js-paper-wallet-amount').text(config.walletAmount);
+    }
+
     if (!walletAmount || (config.walletAmount && config.walletAmount === walletAmount)) {
       return true;
     }
+
     config.walletAmount = walletAmount;
     DashDom.updateTransactionTotal();
   };
   DashDom.commitDisburse = function () {
-    /*
-    data.privateKeys.forEach(function (sk) {
-      var amount = parseInt(localStorage.getItem('dash:' + sk), 10) || 0;
-      localStorage.setItem('dash:' + sk, amount);
-    });
-    */
+    var fundingKeypair = DashDrop._keyToKeypair(data.fundingKey);
+    if (!data.fundingKey || !fundingKeypair.privateKey) {
+      window.alert("Please choose a Private Key with sufficient funds as a funding source.");
+      return;
+    }
 
     var rawTx = DashDrop.disburse({
-      utxos: data.utxos
-    , src: data.wif
-    , dsts: data.keypairs.map(function (kp) { return kp.privateKey; }).filter(Boolean)
+      utxos: data.fundingUtxos
+    , src: data.fundingKey
+    , dsts: data.keypairs.map(function (kp) { return kp.publicKey; }).filter(Boolean)
     , amount: config.walletAmount
     , fee: config.transactionFee
     });
@@ -530,7 +557,7 @@ $(function () {
   $('body').on('click', '.js-airdrop-reclaim', DashDom.commitReclaim);
   $('body').on('keyup', '.js-paper-wallet-keys', DashDom.updateWalletCsv);
   $('body').on('click', '.js-paper-wallet-generate', DashDom.generateWallets);
-  $('body').on('keyup', '.js-funding-key', DashDom.updatePrivateKey);
+  $('body').on('keyup', '.js-funding-key', DashDom.updateFundingKey);
   $('body').on('click', '.js-transaction-commit', DashDom.commitDisburse);
   $('body').on('click', '.js-csv-hide', view.csv.hide);
   $('body').on('click', '.js-csv-show', DashDom.showCsv);
@@ -555,6 +582,7 @@ $(function () {
   $('.js-paper-wallet-quantity').val(config.walletQuantity);
   $('.js-paper-wallet-quantity').text(config.walletQuantity);
   $('.js-transaction-fee').val(config.transactionFee);
+  $('.js-transaction-fee').text(config.transactionFee);
   $('[name=js-fee-schedule]').val(config.transactionFee);
   DashDom.updateTransactionTotal();
 
