@@ -21,8 +21,9 @@ $(function () {
 
   var config = {
     insightBaseUrl: 'https://api.dashdrop.coolaj86.com/insight-api-dash'
-  , numWallets: 100
-  , fee: 1000 // 1000 // 0 seems to give the "insufficient priority" error
+  , walletQuantity: 100
+  , transactionFee: 1000 // 1000 // 0 seems to give the "insufficient priority" error
+  , walletAmount: 10000
   , serialize: { disableDustOutputs: true, disableSmallFees: true }
   };
 
@@ -187,12 +188,12 @@ $(function () {
     data.keypairs = DashDom._getWallets().filter(function (keypair) {
       if (keypair.privateKey && !keypair.amount) { return true; }
     });
-    config.numWallets = $('.js-paper-wallet-quantity').val();
+    config.walletQuantity = $('.js-paper-wallet-quantity').val();
     var i;
     var bitkey;
 
     //data.privateKeys
-    for (i = data.keypairs.length; i < config.numWallets; i += 1) {
+    for (i = data.keypairs.length; i < config.walletQuantity; i += 1) {
       bitkey = new bitcore.PrivateKey();
       data.keypairs.push({
         privateKey: bitkey.toWIF()
@@ -200,21 +201,25 @@ $(function () {
       , amount: 0
       });
     }
-    data.keypairs = data.keypairs.slice(0, config.numWallets);
+    data.keypairs = data.keypairs.slice(0, config.walletQuantity);
     data.csv = DashDom._toCsv(data.keypairs);
 
     console.log('toCsv:', data.csv);
     $('.js-paper-wallet-keys').val(data.csv);
     $('.js-paper-wallet-keys').text(data.csv);
+    DashDom.updateTransactionTotal();
   };
   DashDom.updateWalletQuantity = function () {
-    var count = parseInt($('.js-paper-wallet-quantity').val(), 10);
-    if (data._count && data._count === count) {
+    var quantity = parseInt($('.js-paper-wallet-quantity').val(), 10);
+    console.log('1 updateWalletQuantity:', quantity);
+    if (config.walletQuantity && config.walletQuantity === quantity) {
       return true;
     }
-    data._count = count;
+    config.walletQuantity = quantity;
+    console.log('2 updateWalletQuantity:', quantity);
 
-    $('.js-paper-wallet-quantity').text(count);
+    $('.js-paper-wallet-quantity').text(quantity);
+    DashDom.updateTransactionTotal();
     return true;
   };
   DashDom.updateWalletCsv = function () {
@@ -256,7 +261,7 @@ $(function () {
     $('.js-paper-wallet-keys').val(data.csv);
     $('.js-paper-wallet-keys').text(data.csv);
 
-    config.numWallets = data.keypairs.length;
+    config.walletQuantity = data.keypairs.length;
     $('.js-paper-wallet-quantity').val(data.keypairs.length);
     $('.js-paper-wallet-quantity').text(data.keypairs.length);
   };
@@ -265,6 +270,18 @@ $(function () {
   //
   // Load Private Wallet
   //
+  DashDom.updateTransactionTotal = function () {
+    console.log('update transaction total', config.walletQuantity);
+    config.transactionCount = Math.ceil(config.walletQuantity / 10);
+    config.transactionTotal = (config.transactionCount * config.transactionFee)
+      + (config.walletAmount * config.walletQuantity);
+    $('.js-transaction-fee').val(config.transactionFee);
+    $('.js-transaction-fee').text(config.transactionFee);
+    $('.js-transaction-count').val(config.transactionCount);
+    $('.js-transaction-count').text(config.transactionCount);
+    $('.js-transaction-total').val(config.transactionTotal);
+    $('.js-transaction-total').text(config.transactionTotal);
+  };
   DashDom.updatePrivateKey = function () {
     data.wif = $('.js-funding-key').val();
     //localStorage.setItem('private-key', data.wif);
@@ -285,26 +302,27 @@ $(function () {
           }
         });
         //data.liquid = Math.round(Math.floor((data.sum - config.fee)/1000)*1000);
-        data.liquid = data.sum - config.fee;
+        data.liquid = data.sum - config.transactionFee;
         $('.js-funding-amount').text(data.sum);
-        if (!data.amount) {
-          data.amount = Math.floor(data.liquid/config.numWallets);
-          $('.js-paper-wallet-amount').val(data.amount);
-          $('.js-paper-wallet-amount').text(data.amount);
+        if (!config.walletAmount) {
+          config.walletAmount = Math.floor(data.liquid/config.walletQuantity);
+          $('.js-paper-wallet-amount').val(config.walletAmount);
+          $('.js-paper-wallet-amount').text(config.walletAmount);
         }
 
-        DashDom.updateAirdropAmount();
+        DashDom.updateWalletAmount();
       });
     });
   };
-  DashDom.updateAirdropAmount = function () {
+  DashDom.updateWalletAmount = function () {
     var err;
-    data.amount = parseInt($('.js-paper-wallet-amount').val(), 10);
-    if (!data.sum || data.amount > data.sum) {
-      err = new Error("Insufficient Funds: Cannot load " + data.amount + " mDash onto each wallet.");
+    config.walletAmount = parseInt($('.js-paper-wallet-amount').val(), 10);
+    if (!data.sum || config.walletAmount > data.sum) {
+      err = new Error("Insufficient Funds: Cannot load " + config.walletAmount + " mDash onto each wallet.");
       window.alert(err.message);
       throw err;
     }
+    DashDom.updateTransactionTotal();
   };
   DashDom.commitDisburse = function () {
     /*
@@ -318,8 +336,8 @@ $(function () {
       utxos: data.utxos
     , src: data.wif
     , dsts: data.keypairs.map(function (kp) { return kp.privateKey; }).filter(Boolean)
-    , amount: data.amount
-    , fee: config.fee
+    , amount: config.walletAmount
+    , fee: config.transactionFee
     });
     console.log('transaction:');
     console.log(rawTx);
@@ -335,7 +353,7 @@ $(function () {
 
     // TODO don't keep those which were not filled
     data.keypair.forEach(function (kp) {
-      localStorage.setItem('dash:' + kp.publicKey, (kp.amount || 0) + data.amount);
+      localStorage.setItem('dash:' + kp.publicKey, (kp.amount || 0) + config.walletAmount);
     });
 
     return window.fetch(restTx.url, restTx).then(function (resp) {
@@ -398,7 +416,7 @@ $(function () {
     , srcs: DashDom._getWallets().map(function () {
             })
     , dst: data.addr || data.wif
-    , fee: config.fee
+    , fee: config.transactionFee
     };
     var rawTx = DashDrop.claim(txObj);
 
@@ -440,6 +458,14 @@ $(function () {
   DashDom.showCsv = function () {
     view.csv.show();
     $('.js-paper-wallet-keys').removeAttr('placeholder');
+  };
+  DashDom.updateFeeSchedule = function () {
+    var fee = $('.js-transaction-fee').val();
+    if (fee && !isNaN(fee)) {
+      data.transactionFee = fee;
+      DashDom.updateTransactionTotal();
+    }
+    return true;
   };
 
 
@@ -487,25 +513,34 @@ $(function () {
   $('body').on('click', '.js-airdrop-inspect', DashDom.inspectWallets);
   $('body').on('click', '.js-airdrop-reclaim', DashDom.commitReclaim);
   $('body').on('keyup', '.js-paper-wallet-keys', DashDom.updateWalletCsv);
-  $('body').on('keyup', '.js-paper-wallet-quantity', DashDom.updateWalletQuantity);
   $('body').on('click', '.js-paper-wallet-generate', DashDom.generateWallets);
-  $('body').on('change', '.js-funding-key', DashDom.updatePrivateKey);
-  $('body').on('change', '.js-paper-wallet-amount', DashDom.updateAirdropAmount);
-  $('body').on('click', '.js-paper-wallet-commit', DashDom.commitDisburse);
+  $('body').on('keyup', '.js-funding-key', DashDom.updatePrivateKey);
+  $('body').on('click', '.js-transaction-commit', DashDom.commitDisburse);
   $('body').on('click', '.js-csv-hide', view.csv.hide);
   $('body').on('click', '.js-csv-show', DashDom.showCsv);
   $('body').on('click', '.js-csv-example', DashDom.showExampleCsv);
   $('body').on('change', '.js-insight-base', DashDom.updateInsightBase);
   $('body').on('click', '.js-paper-wallet-print', DashDom.print);
+  // Transaction Related
+  $('body').on('keyup', '.js-paper-wallet-quantity', DashDom.updateWalletQuantity);
+  $('body').on('keyup', '.js-paper-wallet-amount', DashDom.updateWalletAmount);
+  $('body').on('keyup', '.js-transaction-fee', DashDom.updateFeeSchedule);
 
 
   //
   // Initial Values
   //
   $('.js-insight-base').val(config.insightBaseUrl);
-  $('.js-paper-wallet-quantity').val(config.numWallets);
-  $('.js-paper-wallet-quantity').text(config.numWallets);
-  $('[name=js-fee-schedule]').val(config.fee);
+  $('.js-insight-base').text(config.insightBaseUrl);
+  $('.js-paper-wallet-cache').prop('checked', 'checked');
+  $('.js-paper-wallet-cache').removeProp('checked');
+  $('.js-paper-wallet-amount').val(config.walletAmount);
+  $('.js-paper-wallet-amount').text(config.walletAmount);
+  $('.js-paper-wallet-quantity').val(config.walletQuantity);
+  $('.js-paper-wallet-quantity').text(config.walletQuantity);
+  $('.js-transaction-fee').val(config.transactionFee);
+  $('[name=js-fee-schedule]').val(config.transactionFee);
+  DashDom.updateTransactionTotal();
 
 
   DEBUG_DASH_AIRDROP.config = config;

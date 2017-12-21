@@ -134,6 +134,7 @@
           <div class="col-md-12">
             <label>Paper Wallet Public Keys:</label>
             <textarea class="js-paper-wallet-keys form-control"
+              rows=10
               placeholder="hint: paste a CSV or use newlines, spaces, or commas to separate keys"></textarea>
             <button class="js-csv-hide btn btn-link">hide csv</button>
           </div>
@@ -168,10 +169,13 @@
             -->
             <br>
             <label>Per Transaction Fee</label>
-            <input type="text" class="js-paper-wallet-fee form-control">
+            <input type="text" class="js-transaction-fee form-control">
             <br>
             <label>Number of Transactions:</label>
-            <input type="text" class="js-paper-wallet-quantity form-control">
+            <input type="text" class="js-transaction-count form-control" disabled>
+            <br>
+            <label>Total:</label>
+            <input type="text" class="js-transaction-total form-control">
           </div>
         </div>
         <div class="row">
@@ -181,8 +185,8 @@
               placeholder="ex: https://api.example.com/insight-api-dash">
           </div>
           <div class="col-md-3">
-            <label><input type="checkbox" class="js-paper-wallet-save"> Cache Generated Wallets In-App</label>
-            <button type="button" class="js-paper-wallet-commit btn btn-primary">Confirm Transactions</button>
+            <label><input type="checkbox" class="js-paper-wallet-cache"> Cache Generated Wallets In-App</label>
+            <button type="button" class="js-transaction-commit btn btn-primary">Confirm Transactions</button>
           </div>
         </div>
       </div>
@@ -213,6 +217,7 @@
           <div class="col-md-12">
             <label>Paper Wallet Private Keys:</label>
             <textarea class="js-paper-wallet-keys form-control"
+              rows=10
               placeholder="hint: paste a CSV or use newlines, spaces, or commas to separate keys"></textarea>
             <button type="button" class="js-airdrop-inspect btn btn-primary">Check Balances</button>
             <button type="button" class="js-airdrop-reclaim btn btn-primary">Reclaim Dash</button>
@@ -247,9 +252,12 @@
               placeholder="ex: https://api.example.com/insight-api-dash">
             <button type="button" class="js-reclaim-confirm btn btn-primary" disabled>Confirm Reclaim</button>
             <br>
-            <label><input type="radio" name="js-fee-schedule" value="100000"> InstantSend</label>
-            <label><input type="radio" name="js-fee-schedule" value="10000"> 10000 mDash</label>
-            <label><input type="radio" name="js-fee-schedule" value="1000" checked> 1000 mDash</label>
+            <label><input type="radio" class="js-transaction-fee"
+              name="js-fee-schedule" value="100000"> InstantSend</label>
+            <label><input type="radio" class="js-transaction-fee"
+              name="js-fee-schedule" value="10000"> 10000 mDash</label>
+            <label><input type="radio" class="js-transaction-fee"
+              name="js-fee-schedule" value="1000" checked> 1000 mDash</label>
           </div>
         </div>
       </div>
