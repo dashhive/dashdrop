@@ -12,6 +12,12 @@ $(function () {
   , '"XyGDB8JJhR2s7smACWdWDEV1Lgkg2YeZvH", "7rC9qypu87UCbaDDmAeGGK3JS1TYjLNtT97Nse1E1m7CQaMQSPY"'
   , '"Xsnn4AkwnRDPK3i4CC4MpnhGWcvBKM6bVG", "7qjqyQC7NYWbmRbCq1QfCa3PHZzECjos97WpX3KwWRBc2rxxjcQ"'
   ].join('\n');
+  var exampleCsv2 = [
+    '1,"XjSBXfiAUdrGDJ8TYzSBc2Z5tjexAZao4Q","7reAg9R74ujxxSj34jpbRpPhfsPt9ytAh3acMehhs1CmfoGFHbh"'
+  , '2,"XunE8skypFR3MHAbu2S3vBZWrWStzQE9f7","7s8YEQ8LPcCBcWajnwoRYqxCXo5W4AwFrftxQfzoomFGvqYTf8Z"'
+  , '3,"XyGDB8JJhR2s7smACWdWDEV1Lgkg2YeZvH","7rC9qypu87UCbaDDmAeGGK3JS1TYjLNtT97Nse1E1m7CQaMQSPY"'
+  , '4,"Xsnn4AkwnRDPK3i4CC4MpnhGWcvBKM6bVG","7qjqyQC7NYWbmRbCq1QfCa3PHZzECjos97WpX3KwWRBc2rxxjcQ"'
+  ];
 
   var config = {
     insightBaseUrl: 'https://api.dashdrop.coolaj86.com/insight-api-dash'
@@ -27,7 +33,10 @@ $(function () {
   };
 
   var DashDrop = {};
-  DashDrop._toAddress = function (sk) {
+  DashDrop._privateToPublic = function (sk) {
+    return new bitcore.PrivateKey(sk).toAddress().toString();
+  };
+  DashDrop._keypairToPublicKey = function (sk) {
     return sk.publicKey; //new bitcore.PrivateKey(sk).toAddress().toString();
   };
   // opts = { utxo, src, dsts, amount, fee }
@@ -108,12 +117,13 @@ $(function () {
   //
   // Generate Wallets
   //
-  DashDrop._getKeypair = function (key) {
-    var obj = {};
+  DashDrop._keyToKeypair = function (key, obj) {
+    obj = obj || {};
     if (34 === key.length) {
       obj.publicKey = key;
     } else if (52 === key.length || 51 === key.length) {
       obj.privateKey = key;
+      obj.publicKey = DashDrop._privateToPublic(key);
     } else {
       return null;
     }
@@ -130,23 +140,43 @@ $(function () {
 
     for (i = 0; i < len; i += 1) {
       key = localStorage.key(i);
-      if (/^dash:/.test(key)) {
-        try {
-          keypair = JSON.parse(localStorage.getItem(key));
-        } catch(e) {
-          keypair = { amount: parseInt(localStorage.getItem(key), 10) };
-        }
-        dashkey = key.replace(/^dash:/, '');
-        keypair = DashDrop._getKeypair(dashkey);
-        if (!keypair) {
-          console.warn(dashkey);
-          return;
-        }
-        wallets.push(keypair);
+      if (!/^dash:/.test(key)) {
+        continue;
+        //return;
       }
+
+      try {
+        keypair = JSON.parse(localStorage.getItem(key));
+        if (!isNaN(keypair)) {
+          keypair = { amount: keypair };
+        }
+      } catch(e) {
+        keypair = { amount: parseInt(localStorage.getItem(key), 10) || 0 };
+      }
+
+      dashkey = key.replace(/^dash:/, '');
+
+      if (!keypair || !keypair.publicKey) {
+        keypair = DashDrop._keyToKeypair(dashkey, keypair);
+      }
+
+      if (!keypair) {
+        console.warn("Not a valid cached key:", dashkey, localStorage.getItem(key));
+        continue;
+        //return;
+      }
+
+      wallets.push(keypair);
     }
 
     return wallets;
+  };
+  DashDom._toCsv = function (keypairs) {
+    var csv = ''; //'# = ' + keypairs.length;
+    csv += keypairs.map(function (keypair, i) {
+      return (i + 1) + ',' + JSON.stringify(keypair.publicKey) + ',' + JSON.stringify(keypair.privateKey) + ',' + (keypair.amount || 0);
+    }).join("\n");
+    return csv;
   };
   DashDom.generateWallets = function () {
     console.log("generateWallets:");
@@ -155,24 +185,21 @@ $(function () {
     });
     config.numWallets = $('.js-paper-wallet-quantity').val();
     var i;
-    var keypair;
+    var bitkey;
 
     //data.privateKeys
-    data.csv = '# = ';
-    data.csv += data.keypairs.length;
     for (i = data.keypairs.length; i < config.numWallets; i += 1) {
-      keypair = new bitcore.PrivateKey();
+      bitkey = new bitcore.PrivateKey();
       data.keypairs.push({
-        privateKey: keypair.toWIF()
-      , publicKey: keypair.toAddress().toString()
+        privateKey: bitkey.toWIF()
+      , publicKey: bitkey.toAddress().toString()
       , amount: 0
       });
     }
     data.keypairs = data.keypairs.slice(0, config.numWallets);
-    data.csv = data.keypairs.map(function (keypair, i) {
-      return i + JSON.stringify(keypair.publicKey), JSON.stringify(keypair.privateKey);
-    }).join("\n");
+    data.csv = DashDom._toCsv(data.keypairs);
 
+    console.log('toCsv:', data.csv);
     $('.js-paper-wallet-keys').val(data.csv);
     $('.js-paper-wallet-keys').text(data.csv);
   };
@@ -197,27 +224,18 @@ $(function () {
     data.publicKeysMap = {};
     data.privateKeys = [];
 
-    data._walletCsv.split(/[,\n\r\s]+/mg).forEach(function (key) {
-      key = key.replace(/.*"7/, '7').replace(/".*/, '');
-      if (34 === key.length) {
-        data.publicKeysMap[key] = true;
-        data.publicKeys.push(key);
-        console.log('addr', key);
-      } else if (52 === key.length || 51 === key.length) {
-        localStorage.setItem('dash:' + key, -1);
-        data.privateKeys.push(key);
-        console.log('skey', key);
-      } else {
-        console.error("Invalid Key:", key);
-      }
-    });
+    data.keypairs = data._walletCsv.split(/[,\n\r\s]+/mg).map(function (key) {
+      return DashDrop._keyToKeypair(key);
+    }).filter(Boolean);
+
     data.keypairs.forEach(function (kp) {
       data.publicKeysMap[kp.publicKey] = kp;
     });
     data.publicKeys = Object.keys(data.publicKeysMap);
+    data.csv = DashDom._toCsv(data.keypairs);
 
-    $('.js-paper-wallet-keys').val(data.publicKeys.join('\n'));
-    $('.js-paper-wallet-keys').text(data.publicKeys.join('\n'));
+    $('.js-paper-wallet-keys').val(data.csv);
+    $('.js-paper-wallet-keys').text(data.csv);
 
     $('.js-paper-wallet-quantity').val(data.publicKeys.length);
     $('.js-paper-wallet-quantity').text(data.publicKeys.length);
@@ -314,7 +332,7 @@ $(function () {
     });
   };
   DashDom.inspectWallets = function () {
-    var addrs = DashDom._getWallets().filter(DashDom._hasBalance).map(DashDrop._toAddress);
+    var addrs = DashDom._getWallets().filter(DashDom._hasBalance).map(DashDrop._keypairToPublicKey);
     var addrses = [];
     var ledger = '';
 
