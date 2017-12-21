@@ -594,6 +594,7 @@ $(function () {
 			data.csv = ev.target.result;
 			$('.js-paper-wallet-keys').val(data.csv);
       DashDom.updateWalletCsv();
+      view.csv.show();
     });
     reader.readAsText(file);
   }
