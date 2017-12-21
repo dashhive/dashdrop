@@ -27,7 +27,7 @@ $(function () {
   };
 
   var data = {
-    publicKeys: []
+    keypairs: []
   , claimableMap: {}
   , claimable: []
   };
@@ -174,7 +174,11 @@ $(function () {
   DashDom._toCsv = function (keypairs) {
     var csv = ''; //'# = ' + keypairs.length;
     csv += keypairs.map(function (keypair, i) {
-      return (i + 1) + ',' + JSON.stringify(keypair.publicKey) + ',' + JSON.stringify(keypair.privateKey) + ',' + (keypair.amount || 0);
+      return (i + 1) + ','
+        + JSON.stringify(keypair.publicKey) + ','
+        + (JSON.stringify(keypair.privateKey) || '')
+        + ',' + (keypair.amount || 0)
+        ;
     }).join("\n");
     return csv;
   };
@@ -219,32 +223,42 @@ $(function () {
       return true;
     }
     data._walletCsv = walletCsv;
+    console.log('walletCsv:', data._walletCsv);
 
-    data.publicKeys = [];
     data.publicKeysMap = {};
-    data.privateKeys = [];
 
     data.keypairs = data._walletCsv.split(/[,\n\r\s]+/mg).map(function (key) {
-      return DashDrop._keyToKeypair(key);
+      var kp;
+      key = key.replace(/["']/g, '');
+      kp = DashDrop._keyToKeypair(key);
+      if (!kp) {
+        return null;
+      }
+      if (data.publicKeysMap[kp.publicKey]) {
+        if (!data.publicKeysMap[kp.publicKey].privateKey) {
+          data.publicKeysMap[kp.publicKey].privateKey = kp.privateKey;
+        }
+        return null;
+      }
+
+      data.publicKeysMap[kp.publicKey] = kp;
+      return kp;
     }).filter(Boolean);
 
     data.keypairs.forEach(function (kp) {
-      data.publicKeysMap[kp.publicKey] = kp;
+      var val = localStorage.getItem('dash:' + kp.publicKey);
+      if (val) {
+        data.publicKeysMap[kp.publicKey].amount = val.amount || Number(val) || 0;
+      }
     });
-    data.publicKeys = Object.keys(data.publicKeysMap);
     data.csv = DashDom._toCsv(data.keypairs);
 
     $('.js-paper-wallet-keys').val(data.csv);
     $('.js-paper-wallet-keys').text(data.csv);
 
-    $('.js-paper-wallet-quantity').val(data.publicKeys.length);
-    $('.js-paper-wallet-quantity').text(data.publicKeys.length);
-    config.numWallets = data.publicKeys.length;
-
-    console.log('private keys:', data.privateKeys);
-    console.log('public keys:', data.publicKeys);
-
-    // TODO store in localStorage
+    config.numWallets = data.keypairs.length;
+    $('.js-paper-wallet-quantity').val(data.keypairs.length);
+    $('.js-paper-wallet-quantity').text(data.keypairs.length);
   };
 
 
