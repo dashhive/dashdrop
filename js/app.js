@@ -285,29 +285,43 @@ $(function () {
     $('.js-transaction-count').text(config.transactionCount);
     $('.js-transaction-total').val(config.transactionTotal);
     $('.js-transaction-total').text(config.transactionTotal);
+    if (data.fundingKey && config.transactionTotal <= data.fundingTotal) {
+      $('.js-transaction-commit-error').addClass('hidden');
+      $('button.js-transaction-commit').prop('disabled', false);
+    } else {
+      $('.js-transaction-commit-error').removeClass('hidden');
+      $('button.js-transaction-commit').prop('disabled', true);
+    }
   };
   DashDom.updatePrivateKey = function () {
-    data.wif = $('.js-funding-key').val();
+    data.fundingKey = $('.js-funding-key').val();
     //localStorage.setItem('private-key', data.wif);
-    var addr = new bitcore.PrivateKey(data.wif).toAddress().toString();
+    var addr = new bitcore.PrivateKey(data.fundingKey).toAddress().toString();
 
     var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addr);
     window.fetch(url, { mode: 'cors' }).then(function (resp) {
       resp.json().then(function (arr) {
-        data.sum = 0;
+        var cont;
+        data.fundingTotal = 0;
         data.utxos = arr;
         arr.forEach(function (utxo) {
           if (utxo.confirmations >= 6) {
-            data.sum += utxo.satoshis;
+            data.fundingTotal += utxo.satoshis;
           } else {
-            if (window.confirm("Transaction has not had 6 confirmations yet. Continue?")) {
-              data.sum += utxo.satoshis;
+            if (false === cont) {
+              return;
+            }
+            if (true !== cont) {
+              cont = window.confirm("Funding source has not had 6 confirmations yet. Continue?")
+            }
+            if (true === cont) {
+              data.fundingTotal += utxo.satoshis;
             }
           }
         });
         //data.liquid = Math.round(Math.floor((data.sum - config.fee)/1000)*1000);
-        data.liquid = data.sum - config.transactionFee;
-        $('.js-funding-amount').text(data.sum);
+        data.liquid = data.fundingTotal - config.transactionFee;
+        $('.js-funding-amount').text(data.fundingTotal);
         if (!config.walletAmount) {
           config.walletAmount = Math.floor(data.liquid/config.walletQuantity);
           $('.js-paper-wallet-amount').val(config.walletAmount);
@@ -319,13 +333,11 @@ $(function () {
     });
   };
   DashDom.updateWalletAmount = function () {
-    var err;
-    config.walletAmount = parseInt($('.js-paper-wallet-amount').val(), 10);
-    if (!data.sum || config.walletAmount > data.sum) {
-      err = new Error("Insufficient Funds: Cannot load " + config.walletAmount + " mDash onto each wallet.");
-      window.alert(err.message);
-      throw err;
+    var walletAmount = parseInt($('.js-paper-wallet-amount').val(), 10);
+    if (!walletAmount || (config.walletAmount && config.walletAmount === walletAmount)) {
+      return true;
     }
+    config.walletAmount = walletAmount;
     DashDom.updateTransactionTotal();
   };
   DashDom.commitDisburse = function () {
@@ -466,7 +478,7 @@ $(function () {
   DashDom.updateFeeSchedule = function () {
     var fee = $('.js-transaction-fee').val();
     if (fee && !isNaN(fee)) {
-      data.transactionFee = fee;
+      config.transactionFee = fee;
       DashDom.updateTransactionTotal();
     }
     return true;
