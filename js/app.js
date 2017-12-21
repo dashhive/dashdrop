@@ -25,6 +25,10 @@ $(function () {
   , transactionFee: 1000 // 1000 // 0 seems to give the "insufficient priority" error
   , walletAmount: 10000
   , serialize: { disableDustOutputs: true, disableSmallFees: true }
+    // mdash per dash = 1000
+    // udash per dash = 1000000
+    // satoshis per dash = 100000000
+  , dashMultiple: 1000000
   };
 
   var data = {
