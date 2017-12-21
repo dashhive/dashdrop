@@ -1,61 +1,277 @@
 <html>
   <head>
-    <title>Dash AirDrop</title>
+    <title>DashDrop™ by DashHive</title>
     <link rel="stylesheet" type="text/css" href="./css/bootstrap-spacelab-3.3.7.min.css">
   </head>
   <body>
     <div class="container">
-      <h1>Dash Airdrop</h1>
+      <h1>DashDrop™</h1>
+
 
       <div>
-        <h2>0. Config</h2>
-        <label>Insight API:</label>
-        <input type="url" class="js-insight-base form-control"
-          placeholder="ex: https://api.example.com/insight-api-dash/">
+        <div class="row">
+          <div class="col-md-8"></div>
+
+          <div class="col-md-2">
+            secure icon<br>nowifi icon
+          </div>
+          <div class="col-md-2">
+            Offline Version
+            <br>
+            <a href="https://github.com/dashhive/dashdrop.html/archive/v1.0.0.zip"
+              class="btn btn-primary">Download .zip</a>
+          </div>
+
+        </div>
+        <div class="row">
+          <div class="col-md-8"></div>
+
+          <div class="col-md-2">
+            git icon<br>code icon
+          </div>
+          <div class="col-md-2">
+            Open Source
+            <br>
+            <a href="https://github.com/dashhive/dashdrop.html/"
+              target="git_dashdrop"
+              class="btn btn-primary">View Code</a>
+          </div>
+        </div>
+
       </div>
 
-      <div>
-        <h2>1. Generate or Paste Wallets</h2>
-        <label>Paste Public Keys:</label>
-        <textarea class="js-dst-public-keys form-control"
-          placeholder="hint: use newlines, spaces, or commas to separate keys"></textarea>
-        <input type="text" class="js-airdrop-count form-control"
-          placeholder="ex: 10">
-        <button type="button" class="js-airdrop-generate btn btn-primary">Generate <span class="js-airdrop-count">10</span> Dash Wallets</button>
+
+      <div class="row">
+        <h2>Tools for Paper Wallet Giveaways</h2>
+        <p>DashDrop was developed by <a href="https://github.com/dashhive">DashHive</a> as a tool to help
+          community members initiate, track, and reclaim paper wallets at giveaways, conferences, and
+          merchant gift card events.
+          Proposal <a href="https://www.dashcentral.org/p/dash-hive" target="_dashhive">#dash-hive</a>
+        </p>
       </div>
 
-      <div>
-        <h2>2. Print</h2>
-        Before loading these wallets with Dash, please print them - or at least download and save them.
+      <div class="js-flow js-flow-home">
+        <div class="row">
+          <div class="col-md-6">
+            <h3>Disburse Funds</h3>
+            <p>Choose a Funding Source and destination addreses.</p>
+            <p>Generate and print secure wallets or import CSV from paper.dash.org</p>
+            <div class="row">
+              <div class="col-md-6">
+                <p>Import Paper CSV</p>
+                <div>
+                  csv icon
+                  <br/>
+                  paper wallet icon
+                </div>
+              </div>
+              <div class="col-md-6">
+                <p>Generate Paper Wallets</p>
+                <div>
+                  printer icon
+                  <br/>
+                  paper and scissors icon
+                </div>
+              </div>
+              <button class="js-flow-generate btn btn-primary center">Spread Dash &gt;</button>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <h3>Review Giveaway</h3>
+            <p>See the impact your giveaway has had.</p>
+            <p>Reclaim unused wallets for another round.</p>
+            <div class="row">
+              <div class="col-md-6">
+                <p>Measure Outreach</p>
+                <div>
+                  x% claimed, $5.2k spread
+                  <br/>
+                  257 new Dash users
+                </div>
+              </div>
+              <div class="col-md-6">
+                <p>Recycle Unused Wallets</p>
+                <div>
+                  paper wallets icon
+                  <br/>
+                  reclaim wallet icon
+                </div>
+              </div>
+              <button class="js-flow-reclaim btn btn-primary center">Check Status &gt;</button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div>
-        <h2>3. Load Wallets with Dash</h2>
-        <label>Source Private Key (with all the money):</label>
-        <span class="js-src-amount">--</span> mDash
-        <input type="text" class="js-src-private-key form-control"
-         placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
-        <label>Amount of Dash to load on each Wallet:</label>
-        <input type="text" class="js-airdrop-amount form-control"
-          placeholder="ex: 3000000 (about $25)">
-        <label><input type="radio" name="js-fee-schedule" value="100000"> InstantSend</label>
-        <label><input type="radio" name="js-fee-schedule" value="10000"> 10000 mDash</label>
-        <label><input type="radio" name="js-fee-schedule" value="1000" checked> 1000 mDash</label>
-        <button type="button" class="js-airdrop-load btn btn-primary">Load <span class="js-airdrop-count">--</span> Dash Wallets with <span class="js-airdrop-amount">--</span> mDash each.</button>
+      <div class="js-flow js-flow-generate hidden fade">
+        <div class="row">
+          <div class="col-md-5">
+            <h2>Import Existing</h2>
+            <button class="btn btn-primary" disabled>upload .csv</button>
+            <br>
+            <a class="js-csv-toggle btn btn-link">paste csv</a> (<a class="js-csv-example btn btn-link">see example</a>)
+          </div>
+          <div class="col-md-2">
+            <br>
+            <br>
+            <br>
+            - or -
+          </div>
+          <div class="col-md-5">
+            <h2>Generate New</h2>
+            <input type="number"
+              class="js-wallet-count js-airdrop-count form-control"
+              placeholder="ex: 10">
+            <button type="button" class="js-paper-wallet-generate btn btn-primary">Generate</button>
+          </div>
+        </div>
+        <div class="row js-csv-view">
+          <div class="col-md-12">
+            <label>Paper Wallet Public Keys:</label>
+            <textarea class="js-paper-wallet-keys form-control"
+              placeholder="hint: paste a CSV or use newlines, spaces, or commas to separate keys"></textarea>
+            <button class="js-csv-hide btn btn-link">hide csv</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-2">public QR code here</div>
+          <div class="col-md-8">wallet logo here</div>
+          <div class="col-md-2">private QR code here</div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <button class="js-paper-wallet-print btn btn-primary pull-right">Print</button>
+            <button class="js-csv-download btn btn-primary pull-right">Download .csv</button>
+            <button class="js-csv-show btn btn-link">show csv</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <label>Source Private Key (with all the money):</label>
+            <span class="js-src-amount">--</span> mDash
+            <input type="text" class="js-funding-key form-control"
+             placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
+            <label>Amount of Dash to load on each Wallet:</label>
+            <input type="text" class="js-airdrop-amount form-control"
+              placeholder="ex: 3000000 (about $25)">
+            <label><input type="radio" name="js-fee-schedule" value="100000"> InstantSend</label>
+            <label><input type="radio" name="js-fee-schedule" value="10000"> 10000 mDash</label>
+            <label><input type="radio" name="js-fee-schedule" value="1000" checked> 1000 mDash</label>
+            <label>Insight API:</label>
+          </div>
+          <div class="col-md-12">
+            <input type="url" class="js-insight-base form-control"
+              placeholder="ex: https://api.example.com/insight-api-dash/">
+            <label><input type="checkbox" class="js-paper-wallet-save"> Save Wallets</label>
+            <button type="button" class="js-airdrop-load btn btn-primary">Load
+              <span class="js-airdrop-count">--</span> Dash Wallets with <span class="js-airdrop-amount">--</span>
+              mDash each.</button>
+          </div>
+        </div>
       </div>
 
-      <div>
-        <h2>4. Reclaim Fully-loaded Wallets</h2>
-        <label>Paste Private Keys:</label>
-        <textarea class="js-dst-private-keys form-control"
-          placeholder="hint: use newlines, spaces, or commas to separate keys"></textarea>
-        <button type="button" class="js-airdrop-inspect btn btn-primary">Check Balances</button>
-        <button type="button" class="js-airdrop-reclaim btn btn-primary">Reclaim Dash</button>
-        <pre class="js-airdrop-balances fade"><code></code></pre>
+      <div class="js-flow js-flow-reclaim hidden fade">
+        <div class="row">
+          <div class="col-md-12">
+            <h3>Check wallet balance and reclaim funds</h3>
+          </div>
+          <div class="col-md-5">
+            <h2>Local Wallets</h2>
+            <p>250 Wallets are cached here from the last use of this app.</p>
+            <button class="btn btn-primary">Load</button>
+          </div>
+          <div class="col-md-2">
+            - or -
+          </div>
+          <div class="col-md-5">
+            <h2>Import Existing</h2>
+            <p>Upload a CSV in paper.dash.org format to import wallets.</p>
+            <input type="file" class="js-csv-file form-control"
+              placeholder="ex: paper.dash.org.csv">
+            <button type="button" class="js-csv-upload btn btn-primary">Upload CSV</button>
+            <button type="button" class="js-csv-toggle btn btn-link">Paste CSV</button>
+          </div>
+        </div>
+        <div class="row js-csv-view">
+          <div class="col-md-12">
+            <label>Paper Wallet Private Keys:</label>
+            <textarea class="js-paper-wallet-keys form-control"
+              placeholder="hint: paste a CSV or use newlines, spaces, or commas to separate keys"></textarea>
+            <button type="button" class="js-airdrop-inspect btn btn-primary">Check Balances</button>
+            <button type="button" class="js-airdrop-reclaim btn btn-primary">Reclaim Dash</button>
+            <pre class="js-airdrop-balances fade"><code></code></pre>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4">Effectiveness<br> --% ---/---</div>
+          <div class="col-md-4">Remaining Balance<br> ----/--- Dash <br> $---/$--- </div>
+          <div class="col-md-4">Most Recent Claim<br> --/--/---- </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <h3>Reclaim funds</h3>
+            <p>This will transfer remaining funds on unclaimed wallets to the wallet entered below:
+            <button class="js-paper-wallet-print btn btn-primary pull-right">Print</button>
+            <button class="js-csv-download btn btn-primary pull-right">Download .csv</button>
+            <button class="js-csv-toggle btn btn-link">show csv</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <label>Funding Destination Public Key:</label>
+            <input type="text" class="js-funding-key form-control"
+             placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
+            <label>Amount of Dash to receive:</label>
+            <input type="text" class="js-reclaim-amount form-control" disabled>
+          </div>
+          <div class="col-md-12">
+            <label>Insight API:</label>
+            <input type="url" class="js-insight-base form-control"
+              placeholder="ex: https://api.example.com/insight-api-dash/">
+            <button type="button" class="js-reclaim-confirm btn btn-primary" disabled>Confirm Reclaim</button>
+            <br>
+            <label><input type="radio" name="js-fee-schedule" value="100000"> InstantSend</label>
+            <label><input type="radio" name="js-fee-schedule" value="10000"> 10000 mDash</label>
+            <label><input type="radio" name="js-fee-schedule" value="1000" checked> 1000 mDash</label>
+          </div>
+        </div>
+      </div>
+
+
+
+      <div class="row">
+        <div class="col-md-12">
+          <h2>Developer Tools</h2>
+          <label>Dash Insight API:</label>
+          <input type="text" placeholder="i.e. https://api.example.com/insight">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <code><pre>curl -fsSL https://get.example.com/ | bash</pre></code>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-3">
+          <code><pre>dashdrop fund -n 250 -o wallets.csv -s Xxxxx -a 0.05</pre></code>
+        </div>
+        <div class="col-md-3">
+          <code><pre>dashdrop generate -i wallets.csv -s Xxxxx -a 0.05</pre></code>
+        </div>
+        <div class="col-md-3">
+          <code><pre>dashdrop status -i wallets.csv</pre></code>
+        </div>
+        <div class="col-md-3">
+          <code><pre>dashdrop reclaim -i wallets.csv -p Xxx</pre></code>
+        </div>
       </div>
 
       <div><center>Copyright 2017. Created by AJ ONeal in association with Dash Hive. Funded with, for, and by Dash.</center></div>
+
+
     </div>
+
     <script src="js/bitcore-lib-dash.min.js"></script>
     <script src="node_modules/qrcode/build/qrcode.min.js"></script>
     <script src="js/jquery-3.2.1.slim.min.js"></script>

@@ -1,6 +1,15 @@
 var DEBUG_DASH_AIRDROP = {};
+
 $(function () {
   'use strict';
+
+  var exampleCsv = [
+    '# = 4'
+  , '"XjSBXfiAUdrGDJ8TYzSBc2Z5tjexAZao4Q", "7reAg9R74ujxxSj34jpbRpPhfsPt9ytAh3acMehhs1CmfoGFHbh"'
+  , '"XunE8skypFR3MHAbu2S3vBZWrWStzQE9f7", "7s8YEQ8LPcCBcWajnwoRYqxCXo5W4AwFrftxQfzoomFGvqYTf8Z"'
+  , '"XyGDB8JJhR2s7smACWdWDEV1Lgkg2YeZvH", "7rC9qypu87UCbaDDmAeGGK3JS1TYjLNtT97Nse1E1m7CQaMQSPY"'
+  , '"Xsnn4AkwnRDPK3i4CC4MpnhGWcvBKM6bVG", "7qjqyQC7NYWbmRbCq1QfCa3PHZzECjos97WpX3KwWRBc2rxxjcQ"'
+  ].join('\n');
 
   var config = {
     insightBaseUrl: 'https://api.dashdrop.coolaj86.com/insight-api-dash'
@@ -8,6 +17,7 @@ $(function () {
   , fee: 1000 // 1000 // 0 seems to give the "insufficient priority" error
   , serialize: { disableDustOutputs: true, disableSmallFees: true }
   };
+
   var data = {
     publicKeys: []
   , claimableMap: {}
@@ -139,18 +149,18 @@ $(function () {
       data.publicKeys.push( keypair.toAddress().toString() );
     });
 
-    $('.js-dst-public-keys').val(data.publicKeys.join('\n'));
-    $('.js-dst-private-keys').val(DashDom._getWallets().join('\n'));
+    $('.js-paper-wallet-keys').val(data.publicKeys.join('\n'));
+    //$('.js-paper-wallet-keys').val(DashDom._getWallets().join('\n'));
   };
 
   $('.js-airdrop-count').val(config.numWallets);
   $('.js-airdrop-count').text(config.numWallets);
   DashDom.generateWallets();
-  $('body').on('change', '.js-dst-public-keys', function () {
+  $('body').on('change', '.js-paper-wallet-keys', function () {
     data.publicKeys = [];
     data.publicKeysMap = {};
     data.privateKeys = [];
-    $('.js-dst-public-keys').val().trim().split(/[,\n\r\s]+/mg).forEach(function (key) {
+    $('.js-paper-wallet-keys').val().trim().split(/[,\n\r\s]+/mg).forEach(function (key) {
       key = key.replace(/.*"7/, '7').replace(/".*/, '');
       if (34 === key.length) {
         data.publicKeysMap[key] = true;
@@ -170,8 +180,8 @@ $(function () {
     });
     data.publicKeys = Object.keys(data.publicKeysMap);
 
-    $('.js-dst-public-keys').val(data.publicKeys.join('\n'));
-    $('.js-dst-private-keys').val(data.privateKeys.join('\n'));
+    $('.js-paper-wallet-keys').val(data.publicKeys.join('\n'));
+    //$('.js-paper-wallet-keys').val(data.privateKeys.join('\n'));
 
     $('.js-airdrop-count').val(data.publicKeys.length);
     $('.js-airdrop-count').text(data.publicKeys.length);
@@ -186,14 +196,14 @@ $(function () {
     var count = $('.js-airdrop-count').val();
     $('.js-airdrop-count').text(count);
   });
-  $('body').on('click', '.js-airdrop-generate', DashDom.generateWallets);
+  $('body').on('click', '.js-paper-wallet-generate', DashDom.generateWallets);
 
   //
   // Load Private Wallet
   //
   DashDom.updatePrivateKey = function () {
-    data.wif = $('.js-src-private-key').val();
-    localStorage.setItem('private-key', data.wif);
+    data.wif = $('.js-funding-key').val();
+    //localStorage.setItem('private-key', data.wif);
     var addr = new bitcore.PrivateKey(data.wif).toAddress().toString();
 
     var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addr);
@@ -233,13 +243,13 @@ $(function () {
     }
   };
 
-  data.wif = localStorage.getItem('private-key');
+  //data.wif = localStorage.getItem('private-key');
   if (data.wif) {
-    $('.js-src-private-key').val(data.wif);
+    $('.js-funding-key').val(data.wif);
     DashDom.updatePrivateKey();
   }
   $('[name=js-fee-schedule]').val(config.fee);
-  $('body').on('change', '.js-src-private-key', DashDom.updatePrivateKey);
+  $('body').on('change', '.js-funding-key', DashDom.updatePrivateKey);
   $('body').on('change', '.js-airdrop-amount', DashDom.updateAirdropAmount);
   $('body').on('click', '.js-airdrop-load', function () {
     /*
@@ -285,6 +295,20 @@ $(function () {
   //
   // Reclaim Wallets
   //
+  $('body').on('click', '.js-flow-generate', function () {
+    $('.js-flow').addClass('hidden');
+    $('.js-flow-generate').removeClass('hidden');
+    setTimeout(function () {
+      $('.js-flow-generate').addClass('in');
+    });
+  });
+  $('body').on('click', '.js-flow-reclaim', function () {
+    $('.js-flow').addClass('hidden');
+    $('.js-flow-reclaim').removeClass('hidden');
+    setTimeout(function () {
+      $('.js-flow-reclaim').addClass('in');
+    });
+  });
   $('body').on('click', '.js-airdrop-inspect', function () {
     var addrs = DashDom._getWallets().filter(DashDom._hasBalance).map(DashDrop._toAddress).concat(data.publicKeys);
     var addrses = [];
@@ -369,6 +393,37 @@ $(function () {
         */
       });
     });
+  });
+
+  var view = {};
+  view.csv = {
+    toggle: function () {
+      console.log('click, csv toggle');
+      if ($('.js-csv-view').hasClass('hidden')) {
+        $('.js-csv-view').removeClass('hidden');
+      } else {
+        $('.js-csv-view').addClass('hidden');
+      }
+    }
+  , show: function () {
+      $('.js-csv-view').removeClass('hidden');
+    }
+  , hide: function () {
+      $('.js-csv-view').addClass('hidden');
+    }
+  };
+
+  $('body').on('click', '.js-csv-hide', view.csv.hide);
+  $('body').on('click', '.js-csv-show', function () {
+    view.csv.show();
+    $('.js-paper-wallet-keys').removeAttr('placeholder');
+  });
+  $('body').on('click', '.js-csv-example', function () {
+    view.csv.show();
+    $('.js-paper-wallet-keys').attr('placeholder', exampleCsv);
+  });
+  $('body').on('click', '.js-paper-wallet-print', function () {
+    window.print();
   });
 
   DEBUG_DASH_AIRDROP.config = config;
