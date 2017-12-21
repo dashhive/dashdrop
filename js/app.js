@@ -581,6 +581,22 @@ $(function () {
     hiddenElement.download = 'dash-paper-wallets.csv';
     hiddenElement.click();
   }
+  DashDom.uploadCsv = function () {
+    $('.js-csv-upload-file').click();
+  }
+  DashDom.parseFileCsv = function () {
+    var file = $('.js-csv-upload-file')[0].files[0];
+    var reader = new FileReader();
+    reader.addEventListener('error', function () {
+      window.alert("Error parsing CSV");
+    });
+    reader.addEventListener('load', function (ev) {
+			data.csv = ev.target.result;
+			$('.js-paper-wallet-keys').val(data.csv);
+      DashDom.updateWalletCsv();
+    });
+    reader.readAsText(file);
+  }
   DashDom.showExampleCsv = function () {
     view.csv.show();
     $('.js-paper-wallet-keys').attr('placeholder', exampleCsv);
@@ -651,6 +667,8 @@ $(function () {
   $('body').on('click', '.js-csv-hide', view.csv.hide);
   $('body').on('click', '.js-csv-show', DashDom.showCsv);
   $('body').on('click', '.js-csv-download', DashDom.downloadCsv);
+  $('body').on('click', '.js-csv-upload', DashDom.uploadCsv);
+  $('body').on('change', '.js-csv-upload-file', DashDom.parseFileCsv);
   $('body').on('click', '.js-csv-example', DashDom.showExampleCsv);
   $('body').on('click', '.js-paper-wallet-print', DashDom.print);
 
