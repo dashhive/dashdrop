@@ -472,6 +472,17 @@ $(function () {
     return nextTx().then(function (result) {
       $('.js-transaction-commit-complete').removeClass('hidden');
       $('.js-transaction-id').text(result.txid);
+
+      // Don't allow changing of keys
+      $('button.js-paper-wallet-generate').prop('disabled', true);
+      $('textarea.js-paper-wallet-keys').prop('disabled', true);
+      $('input.js-paper-wallet-quantity').prop('disabled', true);
+      $('body').off('keyup', '.js-paper-wallet-keys', DashDom.updateWalletCsv);
+      $('body').off('click', '.js-paper-wallet-generate', DashDom.generateWallets);
+      $('body').off('keyup', '.js-paper-wallet-quantity', DashDom.updateWalletQuantity);
+      // Don't allow anything else
+      $('input.js-transaction-fee').prop('disabled', true);
+      $('input.js-paper-wallet-amount').prop('disabled', true);
     });
   };
   DashDom.inspectWallets = function () {
@@ -619,23 +630,31 @@ $(function () {
 
 
 
+  // Switch views
   $('body').on('click', 'button.js-flow-generate', DashDom.views.generate);
   $('body').on('click', 'button.js-flow-reclaim', DashDom.views.reclaim);
-  $('body').on('click', '.js-airdrop-inspect', DashDom.inspectWallets);
-  $('body').on('click', '.js-airdrop-reclaim', DashDom.commitReclaim);
+
+  // Wallet Generation Related
   $('body').on('keyup', '.js-paper-wallet-keys', DashDom.updateWalletCsv);
   $('body').on('click', '.js-paper-wallet-generate', DashDom.generateWallets);
-  $('body').on('keyup', '.js-funding-key', DashDom.updateFundingKey);
-  $('body').on('click', '.js-transaction-commit', DashDom.commitDisburse);
+  $('body').on('keyup', '.js-paper-wallet-quantity', DashDom.updateWalletQuantity);
+
+  // Save related
   $('body').on('click', '.js-csv-hide', view.csv.hide);
   $('body').on('click', '.js-csv-show', DashDom.showCsv);
   $('body').on('click', '.js-csv-example', DashDom.showExampleCsv);
-  $('body').on('change', '.js-insight-base', DashDom.updateInsightBase);
   $('body').on('click', '.js-paper-wallet-print', DashDom.print);
+
   // Transaction Related
-  $('body').on('keyup', '.js-paper-wallet-quantity', DashDom.updateWalletQuantity);
+  $('body').on('change', '.js-insight-base', DashDom.updateInsightBase);
+  $('body').on('keyup', '.js-funding-key', DashDom.updateFundingKey);
+  $('body').on('click', '.js-transaction-commit', DashDom.commitDisburse);
   $('body').on('keyup', '.js-paper-wallet-amount', DashDom.updateWalletAmount);
   $('body').on('keyup', '.js-transaction-fee', DashDom.updateFeeSchedule);
+
+  // Reclaim Related
+  $('body').on('click', '.js-airdrop-inspect', DashDom.inspectWallets);
+  $('body').on('click', '.js-airdrop-reclaim', DashDom.commitReclaim);
 
 
   //
