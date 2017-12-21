@@ -482,6 +482,7 @@ $(function () {
       $('body').off('keyup', '.js-paper-wallet-quantity', DashDom.updateWalletQuantity);
       // Don't allow anything else
       $('input.js-transaction-fee').prop('disabled', true);
+      $('input.js-funding-key').prop('disabled', true);
       $('input.js-paper-wallet-amount').prop('disabled', true);
     });
   };
@@ -573,6 +574,13 @@ $(function () {
   DashDom.print = function () {
     window.print();
   };
+  DashDom.downloadCsv = function () {
+    var hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;base64,' + btoa(data.csv);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'dash-paper-wallets.csv';
+    hiddenElement.click();
+  }
   DashDom.showExampleCsv = function () {
     view.csv.show();
     $('.js-paper-wallet-keys').attr('placeholder', exampleCsv);
@@ -642,6 +650,7 @@ $(function () {
   // Save related
   $('body').on('click', '.js-csv-hide', view.csv.hide);
   $('body').on('click', '.js-csv-show', DashDom.showCsv);
+  $('body').on('click', '.js-csv-download', DashDom.downloadCsv);
   $('body').on('click', '.js-csv-example', DashDom.showExampleCsv);
   $('body').on('click', '.js-paper-wallet-print', DashDom.print);
 
