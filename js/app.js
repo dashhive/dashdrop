@@ -554,6 +554,9 @@ $(function () {
               var val = Math.round((parseFloat(vin.value, 10) || 0) * config.SATOSHIS_PER_DASH);
               if (!resultsMap[vin.addr]) {
                 resultsMap[vin.addr] = DashDom._createMap(vin.addr.address);
+              }
+              if (!resultsMap[vin.addr].loaded) {
+                resultsMap[vin.addr].loaded = true;
                 // only do this on the first (oldest) transaction
                 resultsMap[vin.addr].in += val;
                 valIn += val;
@@ -597,9 +600,16 @@ $(function () {
       console.log(resultsMap);
       Object.keys(resultsMap).forEach(function (addr) {
         var txs = resultsMap[addr];
-        if ((txs.txs.length && txs.utxos.length) || txs.utxos.length > 1) {
+          // don't double count those that have had transactions and uxtos
+        if (!txs.txs.length) {
+          // basically we could use valIn here instead
+          satoshis += txs.satoshis;
+        }
+
+        // commenting out multiple utxos for test data
+        if ((txs.txs.length && txs.utxos.length)/* || txs.utxos.length > 1*/) {
           dirtyMap[addr] = txs;
-        } else if (1 === txs.utxos.length) {
+        } else if (/*1 === */txs.utxos.length) {
           fullMap[addr] = txs;
         } else if (txs.time) {
           emptyMap[addr] = txs;
@@ -612,8 +622,8 @@ $(function () {
         if (!resultsMap[w.publicKey]) {
           newMap[w.publicKey] = DashDom._createMap(w.publicKey);
         } else {
-          satoshis += resultsMap[w.publicKey].satoshis;
-          count += 1;
+          //satoshis += resultsMap[w.publicKey].satoshis;
+          //count += 1;
         }
       });
 
