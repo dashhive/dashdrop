@@ -2,6 +2,8 @@
   <head>
     <title>DashDrop™ by DashHive</title>
     <link rel="stylesheet" type="text/css" href="./css/bootstrap-spacelab-3.3.7.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap-grid.min.css">
     <link rel="stylesheet" type="text/css" href="./css/dashdrop.css">
     <link rel="stylesheet" media="print" href="https://cdnjs.cloudflare.com/ajax/libs/paper-css/0.3.0/paper.css">
     <link rel="stylesheet" media="print" href="./css/print.css">
@@ -10,54 +12,53 @@
 
   <body>
     <div class="dd-screen-only container">
-      <h1>DashDrop™</h1>
+     
+      <div class="row dd-header">
+        <div class="col-md-6 dd-logo">
+          <img src="./images/logo_preview.png" />
+        </div>  
+        <div class="container col-md-6 dd-code-download">
+          <div class="row justify-content-end">
 
+            <div class="col-md-3">
+              secure icon<br>nowifi icon
+            </div>
+            <div class="col-md-4">
+              Offline Version
+              <br>
+              <a href="https://github.com/dashhive/dashdrop.html/archive/v1.0.0.zip"
+                class="btn btn-primary">Download .zip</a>
+            </div>
 
-      <div>
-        <div class="row">
-          <div class="col-md-8"></div>
-
-          <div class="col-md-2">
-            secure icon<br>nowifi icon
           </div>
-          <div class="col-md-2">
-            Offline Version
-            <br>
-            <a href="https://github.com/dashhive/dashdrop.html/archive/v1.0.0.zip"
-              class="btn btn-primary">Download .zip</a>
+          <div class="row justify-content-end">
+            <div class="col-md-3">
+              git icon code icon
+            </div>
+            <div class="col-md-4">
+              Open Source
+              <br>
+              <a href="https://github.com/dashhive/dashdrop.html/"
+                target="git_dashdrop"
+                class="btn btn-primary">View Code</a>
+            </div>
           </div>
-
         </div>
-        <div class="row">
-          <div class="col-md-8"></div>
-
-          <div class="col-md-2">
-            git icon<br>code icon
-          </div>
-          <div class="col-md-2">
-            Open Source
-            <br>
-            <a href="https://github.com/dashhive/dashdrop.html/"
-              target="git_dashdrop"
-              class="btn btn-primary">View Code</a>
-          </div>
-        </div>
-
       </div>
 
-
-      <div class="row">
+ 
+      <div class="row justify-content-center"><div class="col-8 dd-spiel">
         <h2>Tools for Paper Wallet Giveaways</h2>
-        <p>DashDrop was developed by <a href="https://github.com/dashhive">DashHive</a> as a tool to help
+        <p class="dd-sub-spiel">DashDrop was developed by <a href="https://github.com/dashhive">DashHive</a> as a tool to help
           community members initiate, track, and reclaim paper wallets at giveaways, conferences, and
           merchant gift card events.
           Proposal <a href="https://www.dashcentral.org/p/dash-hive" target="_dashhive">#dash-hive</a>
         </p>
-      </div>
+      </div></div>
 
       <div class="js-flow js-flow-home">
-        <div class="row">
-          <div class="col-md-6">
+        <div class="row justify-content-center dd-component-row">
+          <div class="col-md-5 dd-component">
             <h3>Disburse Funds</h3>
             <p>Choose a Funding Source and destination addreses.</p>
             <p>Generate and print secure wallets or import CSV from paper.dash.org</p>
@@ -81,7 +82,7 @@
               <button class="js-flow-generate btn btn-primary center">Spread Dash &gt;</button>
             </div>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-5 dd-component">
             <h3>Review Giveaway</h3>
             <p>See the impact your giveaway has had.</p>
             <p>Reclaim unused wallets for another round.</p>
@@ -109,28 +110,31 @@
       </div>
 
       <div class="js-flow js-flow-generate hidden fade">
-        <div class="row">
-          <div class="col-md-5">
-            <h2>Import Existing</h2>
-            <button class="js-csv-upload btn btn-primary">Upload .csv</button>
-            <input type="file" class="js-csv-upload-file hidden" accept="text/*">
-            <br>
-            <a class="js-csv-show btn btn-link">paste csv</a> (<a class="js-csv-example btn btn-link">see example</a>)
+        <div class="row dd-component">
+          <div class="col-md-5 ">
+            <h3>Import Existing</h3>
+            <div class="dd-import-buttons">
+              <div class="dd-import-button">
+                <button class="js-csv-upload btn btn-primary">Upload .csv</button>
+                <input type="file" class="js-csv-upload-file hidden" accept="text/*">
+              </div>
+              <div class="dd-import-button">
+                <button class="js-csv-show btn btn-primary">paste csv</button><br/><button class="js-csv-example btn btn-link">see example</button>
+              </div>
+            </div>
           </div>
-          <div class="col-md-2">
-            <br>
-            <br>
-            <br>
+          <div class="col-md dd-or">
             - or -
           </div>
-          <div class="col-md-5">
-            <h2>Generate New</h2>
+          <div class="col-md-5 dd-generate-new">
+            <h3>Generate New</h3>
             <input type="number"
               class="js-paper-wallet-quantity form-control"
               placeholder="ex: 10">
             <button type="button" class="js-paper-wallet-generate btn btn-primary">Generate</button>
           </div>
         </div>
+        <div class="dd-component">
         <div class="row js-csv-view hidden">
           <div class="col-md-12">
             <label>Paper Wallet Public Keys:</label>
@@ -140,76 +144,82 @@
             <button class="js-csv-hide btn btn-link">hide csv</button>
           </div>
         </div>
-        <div class="row dd-backdrop">
+        <div class="row dd-backdrop dd-no-margins">
           <div class="col-md-5"><br><br><br>public QR code here<br><br><br></div>
           <div class="col-md-5"><br><br><br>wallet logo here<br><br><br></div>
           <div class="col-md-2"><br><br><br>private QR code here<br><br><br></div>
         </div>
         <div class="row">
-          <div class="col-md-12">
+          <div class="col-md-12 dd-button-row">
             <button class="js-paper-wallet-print btn btn-primary pull-right">Print</button>
             <button class="js-csv-download btn btn-primary pull-right">Download .csv</button>
             <button class="js-csv-show btn btn-link">show csv</button>
           </div>
         </div>
-        <div class="row">
-          <div class="col-md-9">
-            <label>Source Private Key (with all the money):</label>
-            <span class="js-funding-amount">--</span> mDash
-            <input type="text" class="js-funding-key form-control"
-             placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
           </div>
-          <div class="col-md-3">
-            <label>Amount per Wallet:</label>
-            <input type="text" class="js-paper-wallet-amount form-control"
-              placeholder="ex: 3000000 (about $25)">
-            <!--
-            <label><input type="radio" name="js-fee-schedule" value="100000"> InstantSend</label>
-            <label><input type="radio" name="js-fee-schedule" value="10000"> 10000 mDash</label>
-            <label><input type="radio" name="js-fee-schedule" value="1000" checked> 1000 mDash</label>
-            -->
-            <br>
-            <label>Per Transaction Fee</label>
-            <input type="text" class="js-transaction-fee form-control">
-            <br>
-            <label>Number of Transactions:</label>
-            <input type="text" class="js-transaction-count form-control" disabled>
-            <br>
-            <label>Total:</label>
-            <input type="text" class="js-transaction-total form-control" disabled>
+          <div class="row dd-component">
+            <div class="col-md-9">
+              <label>Source Private Key (with all the money):</label>
+              <span class="js-funding-amount">--</span> mDash
+              <input type="text" class="js-funding-key form-control"
+                placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
+            </div>
+            <div class="col-md-3">
+              <label>Amount per Wallet:</label>
+              <input type="text" class="js-paper-wallet-amount form-control"
+                placeholder="ex: 3000000 (about $25)">
+              <!--
+              <label><input type="radio" name="js-fee-schedule" value="100000"> InstantSend</label>
+              <label><input type="radio" name="js-fee-schedule" value="10000"> 10000 mDash</label>
+              <label><input type="radio" name="js-fee-schedule" value="1000" checked> 1000 mDash</label>
+              -->
+              <br>
+              <label>Per Transaction Fee</label>
+              <input type="text" class="js-transaction-fee form-control">
+              <br>
+              <label>Number of Transactions:</label>
+              <input type="text" class="js-transaction-count form-control" disabled>
+              <br>
+              <label>Total:</label>
+              <input type="text" class="js-transaction-total form-control" disabled>
+            </div>
           </div>
-        </div>
-        <div class="row">
-          <div class="col-md-9">
-            <label>Insight API:</label>
-            <input type="url" class="js-insight-base form-control"
-              placeholder="ex: https://api.example.com/insight-api-dash">
+          <div class="row dd-component">
+            <div class="col-md-9">
+              <label>Insight API:</label>
+              <input type="url" class="js-insight-base form-control"
+                placeholder="ex: https://api.example.com/insight-api-dash">
+            </div>
+            <div class="col-md-3">
+              <label><input type="checkbox" class="js-paper-wallet-cache"> Cache Generated Wallets In-App</label>
+              <span class="js-transaction-commit-error">Supply a funding source with sufficient Dash</span>
+            
+            
+              <!-- TODO poll for confirmations -->
+            </div>
           </div>
-          <div class="col-md-3">
-            <label><input type="checkbox" class="js-paper-wallet-cache"> Cache Generated Wallets In-App</label>
-            <span class="js-transaction-commit-error">Supply a funding source with sufficient Dash</span>
+          <div class="dd-finalize-button">
             <button type="button" class="js-transaction-commit btn btn-primary">Confirm Transactions</button>
-            <!-- TODO poll for confirmations -->
           </div>
           <h2 class="js-transaction-commit-complete">Transaction <span class="js-transaction-id"></span> has been broadcast.</h2>
+          
         </div>
-      </div>
 
       <div class="js-flow js-flow-reclaim hidden fade">
-        <div class="row">
+        <div class="row dd-component">
           <div class="col-md-12">
-            <h3>Check wallet balance and reclaim funds</h3>
+            <h2>Check wallet balance and reclaim funds</h2>
           </div>
           <div class="col-md-5">
-            <h2>Local Wallets</h2>
+            <h3>Local Wallets</h3>
             <p><span class="js-paper-wallet-total">250</span> Wallets are cached here from the last use of this app.</p>
             <button class="btn btn-primary">Load</button>
           </div>
-          <div class="col-md-2">
+          <div class="col-md dd-or">
             - or -
           </div>
-          <div class="col-md-5">
-            <h2>Import Existing</h2>
+          <div class="col-md-5 dd-import-claims">
+            <h3>Import Existing</h3>
             <p>Upload a CSV in paper.dash.org format to import wallets.</p>
             <button type="button" class="js-csv-import btn btn-primary">Upload CSV</button>
             <input type="file" class="js-csv-import-file hidden" accept="text/*">
@@ -226,7 +236,7 @@
             <pre class="js-airdrop-balances fade"><code></code></pre>
           </div>
         </div>
-        <div class="row">
+        <div class="row dd-component">
           <div class="col-md-4">
             Effectiveness
             <br>
@@ -249,6 +259,7 @@
             Latest Redemption: <span class="js-paper-wallet-most-recent">--/--/----</span>
           </div>
         </div>
+        <div class="dd-component">
         <div class="row">
           <div class="col-md-12">
             <h3>Reclaim funds</h3>
@@ -284,6 +295,7 @@
             <label><input type="radio" class="js-transaction-fee"
               name="js-fee-schedule" value="1000" checked> 1000 mDash</label>
             -->
+            </div>
           </div>
         </div>
       </div>
