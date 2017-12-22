@@ -29,6 +29,7 @@ $(function () {
     // udash per dash = 1000000
     // satoshis per dash = 100000000
   , dashMultiple: 1000000
+  , SATOSHIS_PER_DASH: 100000000
   , outputsPerTransaction: 1000 // theroetically 1900 (100kb transaction)
   };
 
@@ -488,8 +489,8 @@ $(function () {
   };
   DashDom.inspectWallets = function (wallets) {
     var resultsMap = {};
-    var emptyMap = {};
-    var fullMap = {};
+    var valIn = 0;
+    var valOut = 0
 
     $('.js-paper-wallet-total').text(wallets.length);
 
@@ -500,10 +501,32 @@ $(function () {
     return DashDrop.inspectWallets({
       wallets: wallets
     , progress: function (progress) {
+        if (progress.data.items) {
+          progress.data.items.forEach(function (tx) {
+            var addr;
+            tx.vin.forEach(function (vin) {
+              addr = vin.addr;
+              var val = Math.round((parseFloat(vin.value, 10) || 0) * config.SATOSHIS_PER_DASH);
+              if (!resultsMap[vin.addr]) {
+                resultsMap[vin.addr] = { value: 0, satoshis: 0, utxos: [], addr: vin.addr.address };
+              }
+              resultsMap[vin.addr].loaded = true;
+              resultsMap[vin.addr].value += val;
+              valIn += val;
+            });
+            resultsMap[addr].time = tx.time * 1000;
+            tx.vout.forEach(function (vout) {
+              var val = Math.round((parseFloat(vout.value, 10) || 0) * config.SATOSHIS_PER_DASH);
+              resultsMap[addr].value -= val;
+              valOut += val;
+            });
+          });
+          return;
+        }
         progress.data.forEach(function (utxo) {
           function insert(map) {
             if (!map[utxo.address]) {
-              map[utxo.address] = { satoshis: 0, utxos: [], addr: utxo.address };
+              map[utxo.address] = { value: 0, satoshis: 0, utxos: [], addr: utxo.address };
             }
 
             map[utxo.address].utxos.push(utxo);
@@ -529,34 +552,54 @@ $(function () {
       }
     }).then(function () {
       var satoshis = 0;
-      var unusedMap = {};
-      var usedMap = {};
+      var notEmptyMap = {};
+      var emptyMap = {};
+      var otherMap = {};
+      var newMap = {};
 
       Object.keys(resultsMap).forEach(function (addr) {
         var txs = resultsMap[addr];
-        if (txs.satoshis) {
-          fullMap[addr] = txs;
-        } else {
+        if (txs.value || txs.satoshis) {
+          notEmptyMap[addr] = txs;
+        } else if (txs.time) {
           emptyMap[addr] = txs;
+        } else {
+          otherMap[addr] = txs;
         }
       });
 
       wallets.forEach(function (w) {
         if (!resultsMap[w.publicKey]) {
-          unusedMap[w.publicKey] = { satoshis: 0, utxos: [], addr: w.publicKey }
+          newMap[w.publicKey] = { value: 0, satoshis: 0, utxos: [], addr: w.publicKey }
         } else {
           satoshis += resultsMap[w.publicKey].satoshis;
         }
       });
 
       // TODO need to check which were loaded, unloaded
-      var usedCount = Object.keys(usedMap).length;
-      var unusedCount = Object.keys(unusedMap).length;
-      var leftoverCount = Object.keys(fullMap).length;
+      var allCount = wallets.length;
+      var notEmptyCount = Object.keys(notEmptyMap).length;
+      var emptyCount = Object.keys(emptyMap).length;
+      var loadedCount = notEmptyCount + emptyCount;
+      var otherCount = Object.keys(otherMap).length;
+      var newCount = Object.keys(newMap).length;
+      // otherCount and newCount should be the same... right?
+      console.log('allCount', allCount);
+      console.log('notEmptyCount', notEmptyCount);
+      console.log('emptyCount', emptyCount);
+      console.log('loadedCount', loadedCount);
+      console.log('otherCount', otherCount);
+      console.log('newCount', newCount);
+      console.log('valIn', valIn);
+      console.log('valOut', valOut);
 
-      $('.js-paper-wallet-percent').text(Math.round(((wallets.length - leftoverCount) / (wallets.length || 1)) * 100));
-      $('.js-paper-wallet-leftover').text(wallets.length - leftoverCount);
+      var percent = Math.round((notEmptyCount / (loadedCount || 1)) * 100);
+
+      $('.js-paper-wallet-percent').text(percent);
+      $('.js-paper-wallet-leftover').text(notEmptyCount);
       $('.js-paper-wallet-balance').text(satoshis);
+      $('.js-paper-wallet-balance-in').text(valIn);
+      $('.js-paper-wallet-balance-out').text(valOut);
     });
   };
   DashDrop.inspectWallets = function (opts) {
@@ -579,8 +622,6 @@ $(function () {
       // https://api.dashdrop.coolaj86.com/insight-api-dash/addrs/XbxDxU8ry96ZpXm4wDiFdpRNGiWuXfemNK,Xr7x52ykWX7FmCcuy32zC2F69817vuwywU/utxo
       var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addrs.join(','));
 
-      // https://api.dashdrop.coolaj86.com/insight-api-dash/addrs/XbxDxU8ry96ZpXm4wDiFdpRNGiWuXfemNK,Xr7x52ykWX7FmCcuy32zC2F69817vuwywU/txs
-      //var url = config.insightBaseUrl + '/addrs/:addrs'.replace(':addrs', addrs.join(','));
       return window.fetch(url, { mode: 'cors' }).then(function (resp) {
         return resp.json().then(function (results) {
           console.log('resp.json():', url);
@@ -590,12 +631,32 @@ $(function () {
             opts.progress({ data: results, count: count, total: total });
           }
 
-          return nextBatch(addrses.shift());
+          return results;
         });
       }, function (err) {
         console.error('Error:');
         console.error(err);
-        return nextBatch(addrses.shift());
+        return null;
+      }).then(function () {
+        // https://api.dashdrop.coolaj86.com/insight-api-dash/addrs/XbxDxU8ry96ZpXm4wDiFdpRNGiWuXfemNK,Xr7x52ykWX7FmCcuy32zC2F69817vuwywU/txs
+        var url = config.insightBaseUrl + '/addrs/:addrs/txs'.replace(':addrs', addrs.join(','));
+
+        return window.fetch(url, { mode: 'cors' }).then(function (resp) {
+          return resp.json().then(function (results) {
+            console.log('resp.json():', url);
+            console.log(results);
+
+            if ('function' === typeof opts.progress) {
+              opts.progress({ data: results, count: count, total: total });
+            }
+
+            return nextBatch(addrses.shift());
+          });
+        }, function (err) {
+          console.error('Error:');
+          console.error(err);
+          return nextBatch(addrses.shift());
+        });
       });
     }
 
