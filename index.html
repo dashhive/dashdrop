@@ -202,7 +202,7 @@
           </div>
           <div class="col-md-5">
             <h2>Local Wallets</h2>
-            <p>250 Wallets are cached here from the last use of this app.</p>
+            <p><span class="js-paper-wallet-total">250</span> Wallets are cached here from the last use of this app.</p>
             <button class="btn btn-primary">Load</button>
           </div>
           <div class="col-md-2">
@@ -211,10 +211,8 @@
           <div class="col-md-5">
             <h2>Import Existing</h2>
             <p>Upload a CSV in paper.dash.org format to import wallets.</p>
-            <input type="file" class="js-csv-file form-control"
-              placeholder="ex: paper.dash.org.csv">
             <button type="button" class="js-csv-upload btn btn-primary">Upload CSV</button>
-            <button type="button" class="js-csv-toggle btn btn-link">Paste CSV</button>
+            <button type="button" class="js-csv-show btn btn-link">Paste CSV</button>
           </div>
         </div>
         <div class="row js-csv-view hidden">
@@ -229,8 +227,22 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-md-4">Effectiveness<br> --% ---/---</div>
-          <div class="col-md-4">Remaining Balance<br> ----/--- Dash <br> $---/$--- </div>
+          <div class="col-md-4">
+            Effectiveness
+            <br>
+            <span class="js-paper-wallet-percent">--</span>%
+            <br>
+            <span class="js-paper-wallet-leftover">---</span>/<span class="js-paper-wallet-total">---</span>
+          </div>
+          <div class="col-md-4">
+            Remaining Balance
+            <br>
+            <span class="js-paper-wallet-balance">----/---</span> Dash Satoshis
+            <!--
+            <br>
+            $---/$---
+            -->
+          </div>
           <div class="col-md-4">Most Recent Claim<br> --/--/---- </div>
         </div>
         <div class="row">

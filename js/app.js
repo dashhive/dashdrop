@@ -326,8 +326,8 @@ $(function () {
     var addr = new bitcore.PrivateKey(data.fundingKey).toAddress().toString();
 
     var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addr);
-    window.fetch(url, { mode: 'cors' }).then(function (resp) {
-      resp.json().then(function (arr) {
+    return window.fetch(url, { mode: 'cors' }).then(function (resp) {
+      return resp.json().then(function (arr) {
         var cont;
         data.fundingTotal = 0;
         data.fundingUtxos = arr;
@@ -487,51 +487,120 @@ $(function () {
     });
   };
   DashDom.inspectWallets = function () {
-    var addrs = DashDom._getWallets().filter(DashDom._hasBalance).map(DashDrop._keypairToPublicKey);
-    var addrses = [];
-    var ledger = '';
+    var resultsMap = {};
+    var emptyMap = {};
+    var fullMap = {};
+    var wallets = DashDom._getWallets();
 
-    while (addrs.length) {
-      addrses.push(addrs.splice(0, 10));
-    };
+    $('.js-paper-wallet-total').text(wallets.length);
 
-    function done() {
-      $('.js-airdrop-balances code').text(ledger);
-      $('.js-airdrop-balances').addClass('in');
+    if (!wallets.length) {
+      return Promise.resolve();
     }
 
-    function nextBatch(addrs) {
-      if (!addrs) {
-        done();
-        return;
-      }
-      var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addrs.join(','));
-      window.fetch(url, { mode: 'cors' }).then(function (resp) {
-        resp.json().then(function (utxos) {
-          console.log('resp.json():');
-          console.log(utxos);
-          utxos.forEach(function (utxo) {
-            if (utxo.confirmations >= 6) {
-              ledger += utxo.address + ' ' + utxo.satoshis + ' (' + utxo.confirmations + '+ confirmations)' + '\n';
-            } else {
-              ledger += utxo.address + ' ' + utxo.satoshis + ' (~' + utxo.confirmations + ' confirmations)' + '\n';
+    return DashDrop.inspectWallets({
+      wallets: wallets
+    , progress: function (progress) {
+        progress.data.forEach(function (utxo) {
+          function insert(map) {
+            if (!map[utxo.address]) {
+              map[utxo.address] = { satoshis: 0, utxos: [], addr: utxo.address };
             }
-            if (utxo.confirmations >= 6 && utxo.satoshis) {
-              if (!data.claimableMap[utxo.address + utxo.txid]) {
-                data.claimableMap[utxo.address + utxo.txid] = true;
-                data.claimable.push(utxo);
-              }
-            }
-          });
 
-          nextBatch(addrses.shift());
+            map[utxo.address].utxos.push(utxo);
+            map[utxo.address].satoshis += utxo.satoshis;
+          }
+
+          insert(resultsMap);
+          /*
+          if (utxo.confirmations >= 6) {
+            ledger += utxo.address + ' ' + utxo.satoshis + ' (' + utxo.confirmations + '+ confirmations)' + '\n';
+          } else {
+            ledger += utxo.address + ' ' + utxo.satoshis + ' (~' + utxo.confirmations + ' confirmations)' + '\n';
+          }
+
+          if (utxo.confirmations >= 6 && utxo.satoshis) {
+            if (!data.claimableMap[utxo.address + utxo.txid]) {
+              data.claimableMap[utxo.address + utxo.txid] = true;
+              data.claimable.push(utxo);
+            }
+          }
+          */
+        });
+      }
+    }).then(function () {
+      var satoshis = 0;
+      var unusedMap = {};
+      var usedMap = {};
+
+      Object.keys(resultsMap).forEach(function (addr) {
+        var txs = resultsMap[addr];
+        if (txs.satoshis) {
+          fullMap[addr] = txs;
+        } else {
+          emptyMap[addr] = txs;
+        }
+      });
+
+      wallets.forEach(function (w) {
+        if (!resultsMap[w.publicKey]) {
+          unusedMap[w.publicKey] = { satoshis: 0, utxos: [], addr: w.publicKey }
+        } else {
+          satoshis += resultsMap[w.publicKey].satoshis;
+        }
+      });
+
+      // TODO need to check which were loaded, unloaded
+      var usedCount = Object.keys(usedMap).length;
+      var unusedCount = Object.keys(unusedMap).length;
+      var leftoverCount = Object.keys(fullMap).length;
+
+      $('.js-paper-wallet-percent').text(Math.round(((wallets.length - leftoverCount) / (wallets.length || 1)) * 100));
+      $('.js-paper-wallet-leftover').text(wallets.length - leftoverCount);
+      $('.js-paper-wallet-balance').text(satoshis);
+    });
+  };
+  DashDrop.inspectWallets = function (opts) {
+    var addrs = opts.wallets.filter(DashDom._hasBalance).map(DashDrop._keypairToPublicKey);
+    var total = addrs.length;
+    var count = 0;
+    var addrses = [];
+    var MAX_BATCH_SIZE = 10;
+    var set;
+
+    while (addrs.length) {
+      set = addrs.splice(0, MAX_BATCH_SIZE);
+      count += set.length;
+      addrses.push(set);
+    };
+
+    function nextBatch(addrs) {
+      if (!addrs) { return; }
+
+      // https://api.dashdrop.coolaj86.com/insight-api-dash/addrs/XbxDxU8ry96ZpXm4wDiFdpRNGiWuXfemNK,Xr7x52ykWX7FmCcuy32zC2F69817vuwywU/utxo
+      var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addrs.join(','));
+
+      // https://api.dashdrop.coolaj86.com/insight-api-dash/addrs/XbxDxU8ry96ZpXm4wDiFdpRNGiWuXfemNK,Xr7x52ykWX7FmCcuy32zC2F69817vuwywU/txs
+      //var url = config.insightBaseUrl + '/addrs/:addrs'.replace(':addrs', addrs.join(','));
+      return window.fetch(url, { mode: 'cors' }).then(function (resp) {
+        return resp.json().then(function (results) {
+          console.log('resp.json():', url);
+          console.log(results);
+
+          if ('function' === typeof opts.progress) {
+            opts.progress({ data: results, count: count, total: total });
+          }
+
+          return nextBatch(addrses.shift());
         });
       }, function (err) {
         console.error('Error:');
         console.error(err);
+        return nextBatch(addrses.shift());
       });
     }
-    nextBatch(addrses.shift());
+
+    return nextBatch(addrses.shift());
   };
   DashDom.commitReclaim = function () {
     var txObj = {
@@ -557,7 +626,7 @@ $(function () {
     };
 
     return window.fetch(restTx.url, restTx).then(function (resp) {
-      resp.json().then(function (result) {
+      return resp.json().then(function (result) {
         console.log('result:');
         console.log(result);
 
@@ -568,6 +637,7 @@ $(function () {
           localStorage.setItem('spent-dash:' + sk, 0);
         });
         */
+        return result;
       });
     });
   };
@@ -614,6 +684,10 @@ $(function () {
     }
     return true;
   };
+  DashDom.initReclaim = function () {
+    // HERE
+    return DashDom.inspectWallets();
+  };
 
 
   //
@@ -633,6 +707,7 @@ $(function () {
     setTimeout(function () {
       $('.js-flow-reclaim').addClass('in');
     });
+    DashDom.initReclaim();
   };
 
   var view = {};
