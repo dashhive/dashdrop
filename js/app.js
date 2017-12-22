@@ -503,68 +503,92 @@ $(function () {
     return DashDrop.inspectWallets({
       wallets: wallets
     , progress: function (progress) {
+        function createMap(addr) {
+          return { change: 0, value: 0, in: 0, out: 0, satoshis: 0, utxos: [], txs: [], addr: addr };
+        }
+
+        // If there are both unspent transactions and spent transactions,
+        // then we should probably not reclaim this address
+
+        if (progress.data.utxos) {
+          progress.data.utxos.forEach(function (utxo) {
+            function insert(map) {
+              if (!map[utxo.address]) {
+                map[utxo.address] = createMap(utxo.address);
+              }
+
+              map[utxo.address].utxos.push(utxo);
+              map[utxo.address].satoshis += utxo.satoshis;
+            }
+
+            insert(resultsMap);
+            /*
+            if (utxo.confirmations >= 6) {
+              ledger += utxo.address + ' ' + utxo.satoshis + ' (' + utxo.confirmations + '+ confirmations)' + '\n';
+            } else {
+              ledger += utxo.address + ' ' + utxo.satoshis + ' (~' + utxo.confirmations + ' confirmations)' + '\n';
+            }
+
+            if (utxo.confirmations >= 6 && utxo.satoshis) {
+              if (!data.claimableMap[utxo.address + utxo.txid]) {
+                data.claimableMap[utxo.address + utxo.txid] = true;
+                data.claimable.push(utxo);
+              }
+            }
+            */
+          });
+        }
         if (progress.data.items) {
           progress.data.items.forEach(function (tx) {
             var addr;
+            // each vin is actually a utxo
             tx.vin.forEach(function (vin) {
               addr = vin.addr;
               var val = Math.round((parseFloat(vin.value, 10) || 0) * config.SATOSHIS_PER_DASH);
               if (!resultsMap[vin.addr]) {
-                resultsMap[vin.addr] = { value: 0, satoshis: 0, utxos: [], addr: vin.addr.address };
+                resultsMap[vin.addr] = createMap(vin.addr.address);
               }
               resultsMap[vin.addr].loaded = true;
-              resultsMap[vin.addr].value += val;
+              resultsMap[vin.addr].in += val;
               valIn += val;
             });
+            resultsMap[addr].txs.push(tx);
             resultsMap[addr].time = tx.time * 1000;
             mostRecent = Math.max(resultsMap[addr].time, mostRecent);
             leastRecent = Math.min(resultsMap[addr].time, leastRecent)
             tx.vout.forEach(function (vout) {
               var val = Math.round((parseFloat(vout.value, 10) || 0) * config.SATOSHIS_PER_DASH);
-              resultsMap[addr].value -= val;
-              valOut += val;
+              vout.scriptPubKey.addresses.forEach(function (_addr) {
+                if (_addr === addr) {
+                  // self used as change address, not actually spent
+                  // this will be represented as utxo
+                  //resultsMap[addr].value == val;
+                  return;
+                }
+                resultsMap[addr].out += val;
+                valOut += val;
+              });
             });
           });
-          return;
         }
-        progress.data.forEach(function (utxo) {
-          function insert(map) {
-            if (!map[utxo.address]) {
-              map[utxo.address] = { value: 0, satoshis: 0, utxos: [], addr: utxo.address };
-            }
-
-            map[utxo.address].utxos.push(utxo);
-            map[utxo.address].satoshis += utxo.satoshis;
-          }
-
-          insert(resultsMap);
-          /*
-          if (utxo.confirmations >= 6) {
-            ledger += utxo.address + ' ' + utxo.satoshis + ' (' + utxo.confirmations + '+ confirmations)' + '\n';
-          } else {
-            ledger += utxo.address + ' ' + utxo.satoshis + ' (~' + utxo.confirmations + ' confirmations)' + '\n';
-          }
-
-          if (utxo.confirmations >= 6 && utxo.satoshis) {
-            if (!data.claimableMap[utxo.address + utxo.txid]) {
-              data.claimableMap[utxo.address + utxo.txid] = true;
-              data.claimable.push(utxo);
-            }
-          }
-          */
-        });
       }
     }).then(function () {
       var satoshis = 0;
-      var notEmptyMap = {};
+      var count = 0;
+      var fullMap = {};
+      var dirtyMap = {};
       var emptyMap = {};
       var otherMap = {};
       var newMap = {};
 
+      console.log('resultsMap:');
+      console.log(resultsMap);
       Object.keys(resultsMap).forEach(function (addr) {
         var txs = resultsMap[addr];
-        if (txs.value || txs.satoshis) {
-          notEmptyMap[addr] = txs;
+        if ((txs.txs.length && txs.utxos.length) || txs.utxos.length > 1) {
+          dirtyMap[addr] = txs;
+        } else if (1 === txs.utxos.length) {
+          fullMap[addr] = txs;
         } else if (txs.time) {
           emptyMap[addr] = txs;
         } else {
@@ -574,39 +598,45 @@ $(function () {
 
       wallets.forEach(function (w) {
         if (!resultsMap[w.publicKey]) {
-          newMap[w.publicKey] = { value: 0, satoshis: 0, utxos: [], addr: w.publicKey }
+          newMap[w.publicKey] = createMap(w.publicKey);
         } else {
           satoshis += resultsMap[w.publicKey].satoshis;
+          count += 1;
         }
       });
 
       // TODO need to check which were loaded, unloaded
       var allCount = wallets.length;
-      var notEmptyCount = Object.keys(notEmptyMap).length;
+      var fullCount = Object.keys(fullMap).length;
+      var dirtyCount = Object.keys(dirtyMap).length;
       var emptyCount = Object.keys(emptyMap).length;
-      var loadedCount = notEmptyCount + emptyCount;
+      var usedCount = emptyCount + dirtyCount;
+      var loadedCount = fullCount + emptyCount + dirtyCount;
       var otherCount = Object.keys(otherMap).length;
       var newCount = Object.keys(newMap).length;
       // otherCount and newCount should be the same... right?
       console.log('allCount', allCount);
-      console.log('notEmptyCount', notEmptyCount);
+      console.log('fullCount', fullCount);
+      console.log('dirtyCount', dirtyCount);
       console.log('emptyCount', emptyCount);
       console.log('loadedCount', loadedCount);
       console.log('otherCount', otherCount);
       console.log('newCount', newCount);
       console.log('valIn', valIn);
       console.log('valOut', valOut);
+      console.log('satoshis', satoshis);
       console.log('mostRecent', new Date(mostRecent).toISOString());
       console.log('leastRecent', new Date(leastRecent).toISOString());
 
-      var percent = Math.round((notEmptyCount / (loadedCount || 1)) * 100);
+      var percent = Math.round((usedCount / (loadedCount || 1)) * 100);
 
       $('.js-paper-wallet-percent').text(percent);
-      $('.js-paper-wallet-leftover').text(notEmptyCount);
+      $('.js-paper-wallet-used').text(usedCount);
       $('.js-paper-wallet-loaded').text(loadedCount);
       $('.js-paper-wallet-balance').text(satoshis);
-      $('.js-paper-wallet-balance-in').text(valIn);
-      $('.js-paper-wallet-balance-out').text(valOut);
+      $('.js-paper-wallet-balance-out').text(valIn); // it's gone out if it's been used as an input
+      //$('.js-paper-wallet-balance-out').text(valOut);
+      $('.js-paper-wallet-balance-in').text(valIn + satoshis);
       $('.js-paper-wallet-most-recent').text(new Date(mostRecent).toLocaleString());
       $('.js-paper-wallet-least-recent').text(new Date(leastRecent).toLocaleString());
       //$('.js-paper-wallet-least-recent').text(new Date(leastRecent).toLocaleDateString());
@@ -631,40 +661,39 @@ $(function () {
 
       // https://api.dashdrop.coolaj86.com/insight-api-dash/addrs/XbxDxU8ry96ZpXm4wDiFdpRNGiWuXfemNK,Xr7x52ykWX7FmCcuy32zC2F69817vuwywU/utxo
       var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addrs.join(','));
+      var utxos;
 
       return window.fetch(url, { mode: 'cors' }).then(function (resp) {
-        return resp.json().then(function (results) {
-          console.log('resp.json():', url);
-          console.log(results);
-
-          if ('function' === typeof opts.progress) {
-            opts.progress({ data: results, count: count, total: total });
-          }
-
-          return results;
+        return resp.json().then(function (_utxos) {
+          utxos = _utxos;
+          console.log('utxos resp.json():', url);
+          console.log(utxos);
         });
       }, function (err) {
-        console.error('Error:');
+        console.error('UTXO Error:');
         console.error(err);
         return null;
       }).then(function () {
         // https://api.dashdrop.coolaj86.com/insight-api-dash/addrs/XbxDxU8ry96ZpXm4wDiFdpRNGiWuXfemNK,Xr7x52ykWX7FmCcuy32zC2F69817vuwywU/txs
         var url = config.insightBaseUrl + '/addrs/:addrs/txs'.replace(':addrs', addrs.join(','));
+        var results;
 
         return window.fetch(url, { mode: 'cors' }).then(function (resp) {
-          return resp.json().then(function (results) {
-            console.log('resp.json():', url);
+          return resp.json().then(function (_results) {
+            results = _results;
+            console.log('txs resp.json():', url);
             console.log(results);
-
-            if ('function' === typeof opts.progress) {
-              opts.progress({ data: results, count: count, total: total });
-            }
-
-            return nextBatch(addrses.shift());
           });
         }, function (err) {
-          console.error('Error:');
+          console.error('Transaction Error:');
           console.error(err);
+        }).then(function () {
+          if ('function' === typeof opts.progress) {
+            if (!results) { results = {}; }
+            results.utxos = utxos;
+            opts.progress({ data: results, count: count, total: total });
+          }
+
           return nextBatch(addrses.shift());
         });
       });
