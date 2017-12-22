@@ -53,7 +53,7 @@ $(function () {
     opts.dsts.forEach(function (publicKey) {
       tx.to(new bitcore.Address(publicKey), opts.amount);
     });
-    tx.change(new bitcore.PrivateKey(opts.src).toAddress());
+    tx.change(opts.change || new bitcore.PrivateKey(opts.src).toAddress());
     opts.utxos.forEach(function (utxo) {
       tx.from(utxo);
     });
@@ -487,6 +487,9 @@ $(function () {
       $('input.js-paper-wallet-amount').prop('disabled', true);
     });
   };
+  DashDom._createMap = function (addr) {
+    return { change: 0, value: 0, in: 0, out: 0, satoshis: 0, utxos: [], txs: [], addr: addr };
+  };
   DashDom.inspectWallets = function (wallets) {
     var resultsMap = {};
     var valIn = 0;
@@ -503,10 +506,6 @@ $(function () {
     return DashDrop.inspectWallets({
       wallets: wallets
     , progress: function (progress) {
-        function createMap(addr) {
-          return { change: 0, value: 0, in: 0, out: 0, satoshis: 0, utxos: [], txs: [], addr: addr };
-        }
-
         // If there are both unspent transactions and spent transactions,
         // then we should probably not reclaim this address
 
@@ -514,7 +513,7 @@ $(function () {
           progress.data.utxos.forEach(function (utxo) {
             function insert(map) {
               if (!map[utxo.address]) {
-                map[utxo.address] = createMap(utxo.address);
+                map[utxo.address] = DashDom._createMap(utxo.address);
               }
 
               map[utxo.address].utxos.push(utxo);
@@ -546,7 +545,7 @@ $(function () {
               addr = vin.addr;
               var val = Math.round((parseFloat(vin.value, 10) || 0) * config.SATOSHIS_PER_DASH);
               if (!resultsMap[vin.addr]) {
-                resultsMap[vin.addr] = createMap(vin.addr.address);
+                resultsMap[vin.addr] = DashDom._createMap(vin.addr.address);
               }
               resultsMap[vin.addr].loaded = true;
               resultsMap[vin.addr].in += val;
@@ -598,7 +597,7 @@ $(function () {
 
       wallets.forEach(function (w) {
         if (!resultsMap[w.publicKey]) {
-          newMap[w.publicKey] = createMap(w.publicKey);
+          newMap[w.publicKey] = DashDom._createMap(w.publicKey);
         } else {
           satoshis += resultsMap[w.publicKey].satoshis;
           count += 1;
