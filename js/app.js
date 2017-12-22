@@ -192,6 +192,13 @@ $(function () {
     return wallets;
   };
   DashDom._toCsv = function (keypairs) {
+    var csv = DashDrop._toCsv(keypairs);
+    console.log('toCsv:', csv);
+    $('.js-paper-wallet-keys').val(csv);
+    $('.js-paper-wallet-keys').text(csv);
+    return csv;
+  };
+  DashDrop._toCsv = function (keypairs) {
     var csv = ''; //'# = ' + keypairs.length;
     csv += keypairs.map(function (keypair, i) {
       return (i + 1) + ','
@@ -223,14 +230,10 @@ $(function () {
     data.keypairs = data.keypairs.slice(0, config.walletQuantity);
     data.csv = DashDom._toCsv(data.keypairs);
 
-    console.log('toCsv:', data.csv);
-    $('.js-paper-wallet-keys').val(data.csv);
-    $('.js-paper-wallet-keys').text(data.csv);
-
     config.transactionFee = DashDom.estimateFee(config, data);
     DashDom.updateTransactionTotal();
   };
-  DashDom._debounceWq
+  DashDom._debounceWq = null;
   DashDom.updateWalletQuantity = function () {
     DashDom._debounceWq = setTimeout(function () {
       var quantity = parseInt($('.js-paper-wallet-quantity').val(), 10);
@@ -287,9 +290,6 @@ $(function () {
       }
     });
     data.csv = DashDom._toCsv(data.keypairs);
-
-    $('.js-paper-wallet-keys').val(data.csv);
-    $('.js-paper-wallet-keys').text(data.csv);
 
     config.walletQuantity = data.keypairs.length;
     $('.js-paper-wallet-quantity').val(data.keypairs.length);
@@ -589,7 +589,6 @@ $(function () {
       }
     }).then(function () {
       var satoshis = 0;
-      var count = 0;
       var fullMap = {};
       var dirtyMap = {};
       var emptyMap = {};
@@ -607,6 +606,7 @@ $(function () {
         }
 
         // commenting out multiple utxos for test data
+        // TODO uncomment
         if ((txs.txs.length && txs.utxos.length)/* || txs.utxos.length > 1*/) {
           dirtyMap[addr] = txs;
         } else if (/*1 === */txs.utxos.length) {
@@ -619,13 +619,14 @@ $(function () {
       });
 
       wallets.forEach(function (w) {
+        if (resultsMap[w.publicKey]) {
+          w.amount = resultsMap[w.publicKey].satoshis;
+        }
         if (!resultsMap[w.publicKey]) {
           newMap[w.publicKey] = DashDom._createMap(w.publicKey);
-        } else {
-          //satoshis += resultsMap[w.publicKey].satoshis;
-          //count += 1;
         }
       });
+      data.csv = DashDom._toCsv(wallets);
 
       // TODO need to check which were loaded, unloaded
       var allCount = wallets.length;
@@ -771,13 +772,13 @@ $(function () {
     hiddenElement.target = '_blank';
     hiddenElement.download = 'dash-paper-wallets.csv';
     hiddenElement.click();
-  }
+  };
   DashDom.importCsv = function () {
     $('.js-csv-import-file').click();
-  }
+  };
   DashDom.uploadCsv = function () {
     $('.js-csv-upload-file').click();
-  }
+  };
   DashDom._parseFileCsv = function (file, cb) {
     var reader = new FileReader();
     reader.addEventListener('error', function () {
@@ -806,7 +807,7 @@ $(function () {
     DashDom._parseFileCsv(file, function () {
       view.csv.show();
     });
-  }
+  };
   DashDom.showExampleCsv = function () {
     view.csv.show();
     $('.js-paper-wallet-keys').attr('placeholder', exampleCsv);
