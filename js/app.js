@@ -491,6 +491,8 @@ $(function () {
     var resultsMap = {};
     var valIn = 0;
     var valOut = 0
+    var mostRecent = 0;
+    var leastRecent = Infinity;
 
     $('.js-paper-wallet-total').text(wallets.length);
 
@@ -515,6 +517,8 @@ $(function () {
               valIn += val;
             });
             resultsMap[addr].time = tx.time * 1000;
+            mostRecent = Math.max(resultsMap[addr].time, mostRecent);
+            leastRecent = Math.min(resultsMap[addr].time, leastRecent)
             tx.vout.forEach(function (vout) {
               var val = Math.round((parseFloat(vout.value, 10) || 0) * config.SATOSHIS_PER_DASH);
               resultsMap[addr].value -= val;
@@ -592,14 +596,20 @@ $(function () {
       console.log('newCount', newCount);
       console.log('valIn', valIn);
       console.log('valOut', valOut);
+      console.log('mostRecent', new Date(mostRecent).toISOString());
+      console.log('leastRecent', new Date(leastRecent).toISOString());
 
       var percent = Math.round((notEmptyCount / (loadedCount || 1)) * 100);
 
       $('.js-paper-wallet-percent').text(percent);
       $('.js-paper-wallet-leftover').text(notEmptyCount);
+      $('.js-paper-wallet-loaded').text(loadedCount);
       $('.js-paper-wallet-balance').text(satoshis);
       $('.js-paper-wallet-balance-in').text(valIn);
       $('.js-paper-wallet-balance-out').text(valOut);
+      $('.js-paper-wallet-most-recent').text(new Date(mostRecent).toLocaleString());
+      $('.js-paper-wallet-least-recent').text(new Date(leastRecent).toLocaleString());
+      //$('.js-paper-wallet-least-recent').text(new Date(leastRecent).toLocaleDateString());
     });
   };
   DashDrop.inspectWallets = function (opts) {
