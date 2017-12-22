@@ -486,11 +486,10 @@ $(function () {
       $('input.js-paper-wallet-amount').prop('disabled', true);
     });
   };
-  DashDom.inspectWallets = function () {
+  DashDom.inspectWallets = function (wallets) {
     var resultsMap = {};
     var emptyMap = {};
     var fullMap = {};
-    var wallets = DashDom._getWallets();
 
     $('.js-paper-wallet-total').text(wallets.length);
 
@@ -561,7 +560,7 @@ $(function () {
     });
   };
   DashDrop.inspectWallets = function (opts) {
-    var addrs = opts.wallets.filter(DashDom._hasBalance).map(DashDrop._keypairToPublicKey);
+    var addrs = opts.wallets.map(DashDrop._keypairToPublicKey);
     var total = addrs.length;
     var count = 0;
     var addrses = [];
@@ -575,7 +574,7 @@ $(function () {
     };
 
     function nextBatch(addrs) {
-      if (!addrs) { return; }
+      if (!addrs) { console.log('addrs:', addrs); return; }
 
       // https://api.dashdrop.coolaj86.com/insight-api-dash/addrs/XbxDxU8ry96ZpXm4wDiFdpRNGiWuXfemNK,Xr7x52ykWX7FmCcuy32zC2F69817vuwywU/utxo
       var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addrs.join(','));
@@ -651,11 +650,13 @@ $(function () {
     hiddenElement.download = 'dash-paper-wallets.csv';
     hiddenElement.click();
   }
+  DashDom.importCsv = function () {
+    $('.js-csv-import-file').click();
+  }
   DashDom.uploadCsv = function () {
     $('.js-csv-upload-file').click();
   }
-  DashDom.parseFileCsv = function () {
-    var file = $('.js-csv-upload-file')[0].files[0];
+  DashDom._parseFileCsv = function (file, cb) {
     var reader = new FileReader();
     reader.addEventListener('error', function () {
       window.alert("Error parsing CSV");
@@ -663,10 +664,26 @@ $(function () {
     reader.addEventListener('load', function (ev) {
 			data.csv = ev.target.result;
 			$('.js-paper-wallet-keys').val(data.csv);
+      console.log('data.csv:');
+      console.log(data.csv);
       DashDom.updateWalletCsv();
-      view.csv.show();
+      console.log('data.keypairs:');
+      console.log(data.keypairs);
+      cb();
     });
     reader.readAsText(file);
+  };
+  DashDom.importFileCsv = function () {
+    var file = $('.js-csv-import-file')[0].files[0];
+    DashDom._parseFileCsv(file, function () {
+      DashDom.initCsv();
+    });
+  };
+  DashDom.parseFileCsv = function () {
+    var file = $('.js-csv-upload-file')[0].files[0];
+    DashDom._parseFileCsv(file, function () {
+      view.csv.show();
+    });
   }
   DashDom.showExampleCsv = function () {
     view.csv.show();
@@ -685,8 +702,12 @@ $(function () {
     return true;
   };
   DashDom.initReclaim = function () {
-    // HERE
-    return DashDom.inspectWallets();
+    var wallets = DashDom._getWallets().filter(DashDom._hasBalance);
+    return DashDom.inspectWallets(wallets);
+  };
+  DashDom.initCsv = function () {
+    var wallets = data.keypairs; //DashDom._getWallets();
+    return DashDom.inspectWallets(wallets);
   };
 
 
@@ -743,6 +764,8 @@ $(function () {
   $('body').on('click', '.js-csv-hide', view.csv.hide);
   $('body').on('click', '.js-csv-show', DashDom.showCsv);
   $('body').on('click', '.js-csv-download', DashDom.downloadCsv);
+  $('body').on('click', '.js-csv-import', DashDom.importCsv);
+  $('body').on('change', '.js-csv-import-file', DashDom.importFileCsv);
   $('body').on('click', '.js-csv-upload', DashDom.uploadCsv);
   $('body').on('change', '.js-csv-upload-file', DashDom.parseFileCsv);
   $('body').on('click', '.js-csv-example', DashDom.showExampleCsv);
@@ -756,7 +779,7 @@ $(function () {
   $('body').on('keyup', '.js-transaction-fee', DashDom.updateFeeSchedule);
 
   // Reclaim Related
-  $('body').on('click', '.js-airdrop-inspect', DashDom.inspectWallets);
+  //$('body').on('click', '.js-airdrop-inspect', DashDom.inspectWallets);
   $('body').on('click', '.js-airdrop-reclaim', DashDom.commitReclaim);
 
 
