@@ -261,13 +261,21 @@
             <input type="text" class="js-funding-key form-control"
              placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
             <label>Amount of Dash to receive:</label>
-            <input type="text" class="js-reclaim-amount form-control" disabled>
+            <input type="text" class="js-paper-wallet-balance form-control" disabled>
+            <label>Transaction Fees (suggested <span class="js-transaction-fees">---</span>):</label>
+            <input type="text" class="js-transaction-fee form-control">
           </div>
           <div class="col-md-12">
             <label>Insight API:</label>
             <input type="url" class="js-insight-base form-control"
               placeholder="ex: https://api.example.com/insight-api-dash">
-            <button type="button" class="js-reclaim-confirm btn btn-primary" disabled>Confirm Reclaim</button>
+            <button type="button" class="js-reclaim-commit btn btn-primary" disabled>Confirm Reclaim</button>
+
+            <div class="js-reclaim-commit-complete hidden">
+              <h2>Transaction Broadcast</h2>
+              <span class="js-transaction-ids"></span>
+            </div>
+            <!--
             <br>
             <label><input type="radio" class="js-transaction-fee"
               name="js-fee-schedule" value="100000"> InstantSend</label>
@@ -275,6 +283,7 @@
               name="js-fee-schedule" value="10000"> 10000 mDash</label>
             <label><input type="radio" class="js-transaction-fee"
               name="js-fee-schedule" value="1000" checked> 1000 mDash</label>
+            -->
           </div>
         </div>
       </div>

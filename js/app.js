@@ -22,6 +22,7 @@ $(function () {
   var config = {
     insightBaseUrl: 'https://api.dashdrop.coolaj86.com/insight-api-dash'
   , walletQuantity: 100
+  , minTransactionFee: 1000 // 1000 // 0 seems to give the "insufficient priority" error
   , transactionFee: 1000 // 1000 // 0 seems to give the "insufficient priority" error
   , walletAmount: 10000
   , serialize: { disableDustOutputs: true, disableSmallFees: true }
@@ -31,12 +32,14 @@ $(function () {
   , dashMultiple: 1000000
   , SATOSHIS_PER_DASH: 100000000
   , outputsPerTransaction: 1000 // theroetically 1900 (100kb transaction)
+  //, reclaimDirty: false
+  , reclaimDirty: true
+  , UTXO_BATCH_MAX: 40 //100
   };
 
   var data = {
     keypairs: []
-  , claimableMap: {}
-  , claimable: []
+  , reclaimUtxos: []
   };
 
   var DashDrop = {};
@@ -70,47 +73,66 @@ $(function () {
     opts.utxos.forEach(function (utxo) {
       tx.from(utxo);
     });
-    if ('undefined' !== typeof opts.fee) {
+    if ('number' === typeof opts.fee && !isNaN(opts.fee)) {
       tx.fee(opts.fee);
     }
     return tx.sign(new bitcore.PrivateKey(opts.src)).serialize({ disableDustOutputs: true, disableSmallFees: true });
   };
 
-  // opts = { utxos, srcs, dst, fee }
-  DashDrop.claim = function (opts) {
+  DashDrop.createTx = function (opts) {
     var tx = new bitcore.Transaction();
     var addr;
-    var sum = 0;
-    var total;
+    //var sum = 0;
+    //var total;
 
     opts.utxos.forEach(function (utxo) {
-      sum += utxo.satoshis;
+      //sum += utxo.satoshis;
       tx.from(utxo);
     });
-    total = sum;
+    //total = sum;
 
-    if ('undefined' !== typeof opts.fee) {
+    if ('number' === typeof opts.fee && !isNaN(opts.fee)) {
+      console.log('1 opts.fee:', opts.fee);
       if (opts.utxos.length > 1) {
         // I'm not actually sure what the fee schedule is, but this worked for me
-        opts.fee = Math.max(opts.fee, 2000);
+        opts.fee = Math.max(opts.fee, config.minTransactionFee * 2/*opts.utxos.length*/);
+        console.log('2 opts.fee:', opts.fee, config.minTransactionFee * 2);
       }
-      sum -= (opts.fee);
+      //sum -= (opts.fee);
+      console.log('3 opts.fee:', opts.fee);
       tx.fee(opts.fee);
     }
 
-    if (52 === opts.dst.length || 51 === opts.dst.length) {
-      addr = new bitcore.PrivateKey(opts.dst).toAddress();
-    } else if (34 === opts.dst.length) {
-      addr = new bitcore.Address(opts.dst);
-    } else {
+    addr = DashDrop._keyToKeypair(opts.dst).publicKey;
+    if (!addr) {
+      window.alert("invalid key format");
       throw new Error('unexpected key format');
     }
+
     //tx.to(addr);
     tx.change(addr);
 
     opts.srcs.forEach(function (sk) {
       tx.sign(new bitcore.PrivateKey(sk));
     });
+
+    return tx;
+  };
+  DashDrop.estimateReclaimFee = function (opts) {
+    var utxos = opts.utxos.slice();
+    var fee = 0;
+    opts.dst = opts.dst || new bitcore.PrivateKey().toAddress().toString();
+
+    while (utxos.length) {
+      opts.utxos = utxos.splice(0, config.UTXO_BATCH_MAX);
+      fee += DashDrop.createTx(opts).getFee();
+    }
+
+    return fee;
+  };
+  // opts = { utxos, srcs, dst, fee }
+  DashDrop.reclaimTx = function (opts) {
+    var tx = DashDrop.createTx(opts);
 
     return tx.serialize({ disableDustOutputs: true, disableSmallFees: true });
   };
@@ -260,7 +282,7 @@ $(function () {
     clearTimeout(DashDom.__walletCsv);
     DashDom.__walletCsv = setTimeout(function () {
       DashDom._updateWalletCsv($el);
-    }, 1000);
+    }, 750);
   };
   DashDom._updateWalletCsv = function ($el) {
     console.log('keyup on csv');
@@ -337,9 +359,21 @@ $(function () {
     }
   };
   DashDom.updateFundingKey = function () {
-    data.fundingKey = $('.js-funding-key').val();
-    //localStorage.setItem('private-key', data.wif);
-    var addr = new bitcore.PrivateKey(data.fundingKey).toAddress().toString();
+    var $el = $(this);
+    DashDom._updateFundingKey($el).then(function () {
+      // whatever
+    });
+  };
+  DashDom._updateFundingKey = function ($el) {
+    data.fundingKey = $el.val();
+
+    var keypair = DashDrop._keyToKeypair(data.fundingKey);
+    if (keypair.privateKey && data.reclaimUtxos.length) {
+      $('.js-reclaim-commit').prop('disabled', false);
+    } else {
+      $('.js-reclaim-commit').prop('disabled', true);
+    }
+    var addr = keypair.publicKey;
 
     var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addr);
     return window.fetch(url, { mode: 'cors' }).then(function (resp) {
@@ -351,15 +385,11 @@ $(function () {
           if (utxo.confirmations >= 6) {
             data.fundingTotal += utxo.satoshis;
           } else {
-            if (false === cont) {
-              return;
-            }
+            if (false === cont) { return; }
             if (true !== cont) {
               cont = window.confirm("Funding source has not had 6 confirmations yet. Continue?")
             }
-            if (true === cont) {
-              data.fundingTotal += utxo.satoshis;
-            }
+            if (true === cont) { data.fundingTotal += utxo.satoshis; }
           }
         });
 
@@ -439,7 +469,7 @@ $(function () {
       , src: data.fundingKey
       , dsts: keyset.map(function (kp) { return kp.publicKey; }).filter(Boolean)
       , amount: config.walletAmount
-      , fee: config.transactionFee
+      , fee: config.transactionFee || undefined
       });
       console.log('transaction:');
       console.log(rawTx);
@@ -685,6 +715,7 @@ $(function () {
       $('.js-paper-wallet-percent').text(percent);
       $('.js-paper-wallet-used').text(usedCount);
       $('.js-paper-wallet-loaded').text(loadedCount);
+      $('.js-paper-wallet-balance').val(satoshis);
       $('.js-paper-wallet-balance').text(satoshis);
       $('.js-paper-wallet-balance-out').text(valIn); // it's gone out if it's been used as an input
       //$('.js-paper-wallet-balance-out').text(valOut);
@@ -692,6 +723,30 @@ $(function () {
       $('.js-paper-wallet-most-recent').text(new Date(mostRecent).toLocaleString());
       $('.js-paper-wallet-least-recent').text(new Date(leastRecent).toLocaleString());
       //$('.js-paper-wallet-least-recent').text(new Date(leastRecent).toLocaleDateString());
+
+      data.reclaimUtxos = [];
+      Object.keys(fullMap).forEach(function (key) {
+        fullMap[key].utxos.forEach(function (utxo) {
+          data.reclaimUtxos.push(utxo);
+        });
+      });
+      if (config.reclaimDirty) {
+        Object.keys(dirtyMap).forEach(function (key) {
+          dirtyMap[key].utxos.forEach(function (utxo) {
+            data.reclaimUtxos.push(utxo);
+          });
+        });
+      }
+      data.reclaimKeypairs = wallets.slice(0);
+      data.transactionFee = DashDrop.estimateReclaimFee({
+        utxos: data.reclaimUtxos
+      , srcs: data.reclaimKeypairs.map(function (kp) { return kp.privateKey; }).filter(Boolean)
+      , dst: null // data.fundingKey
+      //, fee: null // config.transactionFee
+      });
+      console.log('data.transactionFee:', data.transactionFee);
+      $('.js-transaction-fees').text(data.transactionFee);
+      $('.js-transaction-fee').val(data.transactionFee);
     });
   };
   DashDrop.inspectWallets = function (opts) {
@@ -754,42 +809,41 @@ $(function () {
     return nextBatch(addrses.shift());
   };
   DashDom.commitReclaim = function () {
-    var txObj = {
-      utxos: data.claimable
-    , srcs: DashDom._getWallets().map(function () {
-            })
-    , dst: data.addr || data.wif
-    , fee: config.transactionFee
-    };
-    var rawTx = DashDrop.claim(txObj);
+    console.log('commit reclaim');
+    var reclaimUtxos = data.reclaimUtxos.slice();
+    var txResults = [];
 
-    console.log('reclaim rawTx:');
-    console.log(txObj);
-    console.log(rawTx);
-
-    var restTx = {
-      url: config.insightBaseUrl + '/tx/send'
-    , method: 'POST'
-    , headers: {
-        'Content-Type': 'application/json' //; charset=utf-8
+    function nextBatch() {
+      var utxos = reclaimUtxos.splice(0, config.UTXO_BATCH_MAX);
+      if (!utxos.length) { return txResults; }
+      var txObj = {
+        utxos: utxos
+      , srcs: data.reclaimKeypairs.map(function (kp) { return kp.privateKey; }).filter(Boolean)
+      , dst: data.fundingKey
+      };
+      if (config.transactionFee) {
+        txObj.fee = config.transactionFee;
       }
-    , body: JSON.stringify({ rawtx: rawTx })
+      var rawTx = DashDrop.reclaimTx(txObj);
+      var restTx = {
+        url: config.insightBaseUrl + '/tx/send'
+      , method: 'POST'
+      , headers: { 'Content-Type': 'application/json' }
+      , body: JSON.stringify({ rawtx: rawTx })
+      };
+
+      return window.fetch(restTx.url, restTx).then(function (resp) {
+        return resp.json().then(function (result) {
+          txResults.push(result);
+          return nextBatch();
+        });
+      });
     };
 
-    return window.fetch(restTx.url, restTx).then(function (resp) {
-      return resp.json().then(function (result) {
-        console.log('result:');
-        console.log(result);
-
-        // TODO demote these once the transactions are confirmed?
-        /*
-        data.privateKeys.forEach(function (sk) {
-          localStorage.removeItem('dash:' + sk);
-          localStorage.setItem('spent-dash:' + sk, 0);
-        });
-        */
-        return result;
-      });
+    return nextBatch().then(function () {
+      console.log("Transaction Batch", txResults);
+      $('.js-transaction-ids').text(results.map(function (tx) { return tx.txid; }).join('\n'));
+      $('.js-reclaim-commit-complete').removeClass('hidden');
     });
   };
   DashDom.print = function () {
@@ -846,7 +900,8 @@ $(function () {
     $('.js-paper-wallet-keys').removeAttr('placeholder');
   };
   DashDom.updateFeeSchedule = function () {
-    var fee = parseInt($('.js-transaction-fee').val(), 10);
+    var $el = $(this);
+    var fee = parseInt($el.val(), 10);
     if (fee && !isNaN(fee)) {
       config.transactionFee = fee;
       DashDom.updateTransactionTotal();
@@ -933,8 +988,7 @@ $(function () {
   $('body').on('keyup', '.js-transaction-fee', DashDom.updateFeeSchedule);
 
   // Reclaim Related
-  //$('body').on('click', '.js-airdrop-inspect', DashDom.inspectWallets);
-  $('body').on('click', '.js-airdrop-reclaim', DashDom.commitReclaim);
+  $('body').on('click', '.js-reclaim-commit', DashDom.commitReclaim);
 
 
   //
