@@ -256,44 +256,59 @@ $(function () {
     return true;
   };
   DashDom.updateWalletCsv = function () {
-    var walletCsv = $('.js-paper-wallet-keys').val().trim();
+    var $el = $(this);
+    clearTimeout(DashDom.__walletCsv);
+    DashDom.__walletCsv = setTimeout(function () {
+      DashDom._updateWalletCsv($el);
+    }, 1000);
+  };
+  DashDom._updateWalletCsv = function ($el) {
+    console.log('keyup on csv');
+    var walletCsv = $el.val().trim();
     if (data._walletCsv && data._walletCsv === walletCsv) {
       return true;
     }
     data._walletCsv = walletCsv;
     console.log('walletCsv:', data._walletCsv);
 
-    data.publicKeysMap = {};
+    data.keypairs = DashDrop._updateWalletCsv(walletCsv);
+    console.log('updateWalletCsv, inspectWallets');
+    DashDom.inspectWallets(data.keypairs);
 
-    data.keypairs = data._walletCsv.split(/[,\n\r\s]+/mg).map(function (key) {
+    $('.js-paper-wallet-quantity').val(data.keypairs.length);
+    $('.js-paper-wallet-quantity').text(data.keypairs.length);
+  };
+  DashDrop._updateWalletCsv = function (csv) {
+    var publicKeysMap = {};
+    var keypairs = csv.split(/[,\n\r\s]+/mg).map(function (key) {
       var kp;
       key = key.replace(/["']/g, '');
       kp = DashDrop._keyToKeypair(key);
       if (!kp) {
         return null;
       }
-      if (data.publicKeysMap[kp.publicKey]) {
-        if (!data.publicKeysMap[kp.publicKey].privateKey) {
-          data.publicKeysMap[kp.publicKey].privateKey = kp.privateKey;
+      if (publicKeysMap[kp.publicKey]) {
+        if (!publicKeysMap[kp.publicKey].privateKey) {
+          publicKeysMap[kp.publicKey].privateKey = kp.privateKey;
         }
         return null;
       }
 
-      data.publicKeysMap[kp.publicKey] = kp;
+      publicKeysMap[kp.publicKey] = kp;
       return kp;
     }).filter(Boolean);
+    console.log('keypairs', keypairs);
 
-    data.keypairs.forEach(function (kp) {
+    keypairs.forEach(function (kp) {
       var val = localStorage.getItem('dash:' + kp.publicKey);
       if (val) {
-        data.publicKeysMap[kp.publicKey].amount = val.amount || Number(val) || 0;
+        publicKeysMap[kp.publicKey].amount = val.amount || Number(val) || 0;
       }
     });
-    data.csv = DashDom._toCsv(data.keypairs);
+    data.csv = DashDom._toCsv(keypairs);
 
-    config.walletQuantity = data.keypairs.length;
-    $('.js-paper-wallet-quantity').val(data.keypairs.length);
-    $('.js-paper-wallet-quantity').text(data.keypairs.length);
+    config.walletQuantity = keypairs.length;
+    return keypairs;
   };
 
 
@@ -803,7 +818,7 @@ $(function () {
 			$('.js-paper-wallet-keys').val(data.csv);
       console.log('data.csv:');
       console.log(data.csv);
-      DashDom.updateWalletCsv();
+      DashDom._updateWalletCsv($('.js-paper-wallet-keys'));
       console.log('data.keypairs:');
       console.log(data.keypairs);
       cb();
@@ -840,10 +855,12 @@ $(function () {
   };
   DashDom.initReclaim = function () {
     var wallets = DashDom._getWallets().filter(DashDom._hasBalance);
+    //return DashDom.inspectWallets(wallets);
     return DashDom.inspectWallets(wallets);
   };
   DashDom.initCsv = function () {
     var wallets = data.keypairs; //DashDom._getWallets();
+    //return DashDom.inspectWallets(wallets);
     return DashDom.inspectWallets(wallets);
   };
 
