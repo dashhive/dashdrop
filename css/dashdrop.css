@@ -161,3 +161,7 @@ html {
 .dd-import-claims .btn {
     margin-top:  0.7rem;
 }
+
+.dd-fix-button-margin {
+    margin-left: 13px;
+}
