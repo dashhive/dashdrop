@@ -495,13 +495,18 @@ $(function () {
     var valIn = 0;
     var valOut = 0
     var mostRecent = 0;
-    var leastRecent = Infinity;
+    var leastRecent = Date.now() + (60 * 60 * 24 * 1000 * 3650);
+    var publicKeysMap = {};
 
     $('.js-paper-wallet-total').text(wallets.length);
 
     if (!wallets.length) {
       return Promise.resolve();
     }
+
+    wallets.forEach(function (w) {
+      publicKeysMap[w.publicKey] = w;
+    });
 
     return DashDrop.inspectWallets({
       wallets: wallets
@@ -512,6 +517,11 @@ $(function () {
         if (progress.data.utxos) {
           progress.data.utxos.forEach(function (utxo) {
             function insert(map) {
+              if (!publicKeysMap[utxo.address]) {
+                console.warn('utxo not found:');
+                console.warn(utxo);
+                return;
+              }
               if (!map[utxo.address]) {
                 map[utxo.address] = DashDom._createMap(utxo.address);
               }
@@ -552,6 +562,8 @@ $(function () {
             tx.vin.forEach(function (vin) {
               addr = vin.addr;
               var val = Math.round((parseFloat(vin.value, 10) || 0) * config.SATOSHIS_PER_DASH);
+              if (!publicKeysMap[vin.addr]) { return; }
+
               if (!resultsMap[vin.addr]) {
                 resultsMap[vin.addr] = DashDom._createMap(vin.addr.address);
               }
@@ -562,6 +574,8 @@ $(function () {
                 valIn += val;
               }
             });
+            if (!publicKeysMap[addr]) { return; }
+
             // NOTE: in our use case for this app
             // the very first transaction in values will be what was put in
             // any later transactions will be full values of the change
