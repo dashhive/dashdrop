@@ -538,7 +538,15 @@ $(function () {
           });
         }
         if (progress.data.items) {
-          progress.data.items.forEach(function (tx) {
+          progress.data.items = progress.data.items.sort(function (a, b) {
+            // earliest first
+            return a.time - b.time;
+          });
+          //console.log('progress.data.items:');
+          //console.log(progress.data.items);
+          progress.data.items.forEach(eachTx);
+
+          function eachTx(tx) {
             var addr;
             // each vin is actually a utxo
             tx.vin.forEach(function (vin) {
@@ -546,15 +554,19 @@ $(function () {
               var val = Math.round((parseFloat(vin.value, 10) || 0) * config.SATOSHIS_PER_DASH);
               if (!resultsMap[vin.addr]) {
                 resultsMap[vin.addr] = DashDom._createMap(vin.addr.address);
+                // only do this on the first (oldest) transaction
+                resultsMap[vin.addr].in += val;
+                valIn += val;
               }
-              resultsMap[vin.addr].loaded = true;
-              resultsMap[vin.addr].in += val;
-              valIn += val;
             });
+            // NOTE: in our use case for this app
+            // the very first transaction in values will be what was put in
+            // any later transactions will be full values of the change
             resultsMap[addr].txs.push(tx);
-            resultsMap[addr].time = tx.time * 1000;
+            resultsMap[addr].time = Math.min(tx.time * 1000, resultsMap[addr].time || Infinity);
             mostRecent = Math.max(resultsMap[addr].time, mostRecent);
             leastRecent = Math.min(resultsMap[addr].time, leastRecent)
+            /*
             tx.vout.forEach(function (vout) {
               var val = Math.round((parseFloat(vout.value, 10) || 0) * config.SATOSHIS_PER_DASH);
               vout.scriptPubKey.addresses.forEach(function (_addr) {
@@ -568,7 +580,8 @@ $(function () {
                 valOut += val;
               });
             });
-          });
+            */
+          }
         }
       }
     }).then(function () {
@@ -656,7 +669,7 @@ $(function () {
     };
 
     function nextBatch(addrs) {
-      if (!addrs) { console.log('addrs:', addrs); return; }
+      if (!addrs) { return; }
 
       // https://api.dashdrop.coolaj86.com/insight-api-dash/addrs/XbxDxU8ry96ZpXm4wDiFdpRNGiWuXfemNK,Xr7x52ykWX7FmCcuy32zC2F69817vuwywU/utxo
       var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addrs.join(','));
