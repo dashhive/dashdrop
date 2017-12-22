@@ -1,0 +1,163 @@
+@media not print {
+  .dd-print-only {
+    display: none;
+  }
+}
+.dd-backdrop {
+  background-color: #EFEFEF;
+}
+.dd-backdrop-dev {
+  background-color: #CCECFF;
+}
+
+
+h2 {
+    color: #1E8CEB;
+    margin-bottom: 1.9rem;
+    margin-top: 3rem;
+    text-align:  center;
+    font-size: 2rem;
+    font-weight: 300;
+}
+
+.dd-sub-spiel {
+    text-align: center;
+    color: #999;
+    font-size: 1.4rem;
+}
+
+.dd-sub-spiel a {
+    color: #78b7e8;
+}
+
+.dd-logo img {
+    max-width: 12rem;
+}
+
+.dd-logo {
+    display: flex;
+    align-items:  center;
+}
+
+
+.row.dd-header {
+    margin-top: 3rem;
+}
+
+body {
+    padding-top: 2rem;
+}
+
+.col-8.dd-spiel {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+}
+
+.dd-component {
+    border: solid #dde5ed 1px;
+    border-radius: 8px;
+    margin: 18px;
+    transition: max-height 0.25s ease-in;
+    max-height:  10000px;
+    padding: 30px;
+}
+
+.btn-primary {
+    color: #1e8ceb;
+    background-color:  #E3F4FD;
+    border-color:  #E3F4FD;
+    background-image: none;
+    margin-top: 15px;
+}
+
+.dd-component-row {margin-left: -20px;margin-right: -20px;}
+
+
+
+h3 {
+    color: #9dafc0;
+    font-size:  1.4rem;
+    margin-bottom: 1rem;
+}
+
+body {
+    color: #777;
+}
+
+.js-flow.js-flow-reclaim.fade.in {}
+
+.btn-primary:hover {
+    background-image: none;
+    border-color: #1e8ceb;
+    background-color: #1e8ceb;
+}
+
+html {
+    font-size: 16px;
+}
+
+
+.btn-primary:disabled {background-color: #E3F4FD;border-color: #E3F4FD;opacity: .6;}
+
+.dd-or {
+    display:  flex;
+    align-items:  center;
+    justify-content: center;
+}
+
+.dd-button-row {
+    padding-top: 30px;
+}
+
+.dd-no-margins {
+    margin: 0;
+}
+
+.dd-button-row .btn {
+    margin-top: 0px;
+    margin-left: 20px;
+    margin-right:  20px;
+}
+
+
+
+.dd-code-download .btn {
+    width:  9rem;
+    margin: 0;
+}
+
+.dd-code-download .col-md-4 {
+    text-align: center;
+    padding: 5px;
+}
+
+.dd-finalize-button .btn {
+    font-size: 1.6rem;
+}
+
+.dd-import-buttons {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+}
+
+.dd-import-button .btn {
+    margin-top: 0px;
+    width: 8rem;
+}
+
+.dd-generate-new {
+    padding-left: 3rem;
+    padding-right:  3rem;
+}
+
+.dd-finalize-button {
+    display:  flex;
+    justify-content: center;
+    align-items:  center;
+}
+
+.dd-import-claims .btn {
+    margin-top:  0.7rem;
+}
