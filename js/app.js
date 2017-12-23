@@ -43,6 +43,30 @@ $(function () {
   };
 
   var DashDrop = {};
+  DashDrop._getSourceAddress = function (sk) {
+    var bitkey;
+    data.sourceAddress = JSON.parse(localStorage.getItem('source-address') || null);
+
+    try {
+      bitkey = new bitcore.PrivateKey(data.sourceAddress.privateKey);
+    } catch(e) {
+      data.sourceAddress = null;
+    }
+
+    if (!data.sourceAddress) {
+      bitkey = new bitcore.PrivateKey();
+      data.sourceAddress = {
+        publicKey: bitkey.toAddress().toString()
+      , privateKey: bitkey.toWIF()
+      , amount: 0
+      };
+      localStorage.setItem('source-address', JSON.stringify(data.sourceAddress));
+    }
+
+    console.log("data.sourceAddress");
+    console.log(data.sourceAddress);
+    return data.sourceAddress;
+  };
   DashDrop._privateToPublic = function (sk) {
     return new bitcore.PrivateKey(sk).toAddress().toString();
   };
@@ -358,22 +382,48 @@ $(function () {
       $('button.js-transaction-commit').prop('disabled', true);
     }
   };
-  DashDom.updateFundingKey = function () {
+  DashDom.updateFundingKey = function (ev) {
     var $el = $(this);
-    DashDom._updateFundingKey($el).then(function () {
-      // whatever
-    });
+    DashDom._updateFundingKey($el, ev);
   };
   DashDom._updateFundingKey = function ($el) {
-    data.fundingKey = $el.val();
-
-    var keypair = DashDrop._keyToKeypair(data.fundingKey);
+    console.log('$el', $el);
+    console.log('$el.val()', $el.val());
+    var keypair = DashDrop._keyToKeypair($el.val());
+		var qrPublic = new QRious({
+			element: document.querySelector('.js-funding-qr-public')
+		, value: keypair.publicKey
+    , size: 256
+    , background: '#CCFFFF'
+		});
+		var	qrPrivate;
+		if (keypair.privateKey) {
+			qrPrivate = new QRious({
+				element: document.querySelector('.js-funding-qr-private')
+			, value: keypair.privateKey
+			});
+		}
     if (keypair.privateKey && data.reclaimUtxos.length) {
       $('.js-reclaim-commit').prop('disabled', false);
     } else {
       $('.js-reclaim-commit').prop('disabled', true);
     }
+    $('.js-funding-key-public').val(data.fundingKeypair.publicKey);
+
+    DashDrop._updateFundingKey(keypair).then(function () {
+      // whatever
+			$('.js-transaction-fee').val(config.transactionFee);
+			$('.js-transaction-fee').text(config.transactionFee);
+
+			$('.js-funding-amount').val(data.fundingTotal);
+			$('.js-funding-amount').text(data.fundingTotal);
+
+			DashDom.updateWalletAmount();
+    });
+  };
+  DashDrop._updateFundingKey = function (keypair) {
     var addr = keypair.publicKey;
+    data.fundingKey = keypair.privateKey || keypair.publicKey;
 
     var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addr);
     return window.fetch(url, { mode: 'cors' }).then(function (resp) {
@@ -401,13 +451,7 @@ $(function () {
         };
         config.transactionFee = DashDrop.estimateFee(txOpts);
 
-        $('.js-transaction-fee').val(config.transactionFee);
-        $('.js-transaction-fee').text(config.transactionFee);
-
-        $('.js-funding-amount').val(data.fundingTotal);
-        $('.js-funding-amount').text(data.fundingTotal);
-
-        DashDom.updateWalletAmount();
+				return config.transactionFee;
       });
     });
   };
@@ -542,6 +586,7 @@ $(function () {
     var mostRecent = 0;
     var leastRecent = Date.now() + (60 * 60 * 24 * 1000 * 3650);
     var publicKeysMap = {};
+    var count = 0;
 
     $('.js-paper-wallet-total').text(wallets.length);
 
@@ -553,12 +598,20 @@ $(function () {
       publicKeysMap[w.publicKey] = w;
     });
 
+    $('.js-paper-wallet-load').removeClass('hidden');
+    $('.js-paper-wallet-load .progress-bar').css({ width: '2%' });
+    $('.js-paper-wallet-load .progress-bar').text('2%');
     return DashDrop.inspectWallets({
       wallets: wallets
     , progress: function (progress) {
         // If there are both unspent transactions and spent transactions,
         // then we should probably not reclaim this address
 
+        count += 10;
+        var percent = (count / wallets.length) * 100;
+        var showPercent = Math.max(5, (percent * 0.93)); // always at least 5, never 100
+        $('.js-paper-wallet-load .progress-bar').css({ width: showPercent + '%' });
+        $('.js-paper-wallet-load .progress-bar').text(showPercent.toFixed(2) + '%');
         if (progress.data.utxos) {
           progress.data.utxos.forEach(function (utxo) {
             function insert(map) {
@@ -646,6 +699,14 @@ $(function () {
           }
         }
       }
+    }).then(function () {
+      $('.js-paper-wallet-load .progress-bar').css({ width: '96%' });
+      $('.js-paper-wallet-load .progress-bar').text('96%');
+      return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+          resolve();
+        }, 50);
+      });
     }).then(function () {
       var satoshis = 0;
       var fullMap = {};
@@ -747,6 +808,8 @@ $(function () {
       console.log('data.transactionFee:', data.transactionFee);
       $('.js-transaction-fees').text(data.transactionFee);
       $('.js-transaction-fee').val(data.transactionFee);
+      $('.js-paper-wallet-load .progress-bar').css({ width: '100%' });
+      $('.js-paper-wallet-load .progress-bar').text('100%');
     });
   };
   DashDrop.inspectWallets = function (opts) {
@@ -925,6 +988,12 @@ $(function () {
   //
   DashDom.views.generate = function () {
     DashDom.generateWallets();
+    data.fundingKeypair = DashDrop._getSourceAddress();
+    data.fundingKey = data.fundingKeypair.privateKey;
+    $('.js-funding-key').val(data.fundingKeypair.privateKey);
+    $('.js-funding-key').trigger('keyup');
+    //DashDom._updateFundingKey($('.js-funding-key'));
+
     $('.js-flow').addClass('hidden');
     $('.js-flow-generate').removeClass('hidden');
     setTimeout(function () {
@@ -983,6 +1052,11 @@ $(function () {
   // Transaction Related
   $('body').on('change', '.js-insight-base', DashDom.updateInsightBase);
   $('body').on('keyup', '.js-funding-key', DashDom.updateFundingKey);
+  $('body').on('click', '.js-funding-key-check', function () {
+    $('.js-funding-amount').val('---');
+    $('.js-funding-amount').text('---');
+    $('.js-funding-key').trigger('keyup');
+  });
   $('body').on('click', '.js-transaction-commit', DashDom.commitDisburse);
   $('body').on('keyup', '.js-paper-wallet-amount', DashDom.updateWalletAmount);
   $('body').on('keyup', '.js-transaction-fee', DashDom.updateFeeSchedule);

@@ -21,7 +21,11 @@
           <div class="row justify-content-end">
 
             <div class="col-md-3">
-              secure icon<br>nowifi icon
+              <br>
+              <img width=32 alt="secure icon"
+                src="https://www.shareicon.net/data/32x32/2015/12/02/681353_locked_512x512.png">
+              <img width=32 alt="no wifi icon"
+                src="https://image.jimcdn.com/app/cms/image/transf/none/path/s3b13abafbc4b913d/image/iec1e366d01f0219f/version/1426610304/image.png">
             </div>
             <div class="col-md-4">
               Offline Version
@@ -33,7 +37,11 @@
           </div>
           <div class="row justify-content-end">
             <div class="col-md-3">
-              git icon code icon
+              <br>
+              <img width=32 alt="git icon"
+                src="https://git-scm.com/images/logos/downloads/Git-Icon-1788C.png">
+              <img width=32 alt="source icon"
+                src="https://png.icons8.com/wired/2x//source-code.png">
             </div>
             <div class="col-md-4">
               Open Source
@@ -66,17 +74,20 @@
               <div class="col-md-6">
                 <p>Import Paper CSV</p>
                 <div>
-                  csv icon
-                  <br/>
-                  paper wallet icon
+                  <img width=64 alt="csv icon"
+                    src="https://png.icons8.com/wired/2x/csv.png">
+                  <img width=64 alt="paper wallet icon"
+                    src="http://www.iconarchive.com/download/i76782/pixelkit/swanky-outlines/06-Wallet.ico">
                 </div>
               </div>
               <div class="col-md-6">
                 <p>Generate Paper Wallets</p>
                 <div>
-                  printer icon
+                  <img width=64 alt="printer icon"
+                    src="https://image.flaticon.com/icons/png/128/34/34441.png">
+                  <img width=64 alt="paper and scissors icon"
+                    src="https://cdn0.iconfinder.com/data/icons/essentials-line/100/Cut-128.png">
                   <br/>
-                  paper and scissors icon
                 </div>
               </div>
               <button class="js-flow-generate btn btn-primary center">Spread Dash &gt;</button>
@@ -90,17 +101,25 @@
               <div class="col-md-6">
                 <p>Measure Outreach</p>
                 <div>
-                  x% claimed, $x.xk spread
+                  <img width=64 alt="x% claimed, $x.xk spread icon"
+                    src="https://cdn1.iconfinder.com/data/icons/business-377/128/clipboard-charts-3-256.png">
+                  <img width=64 alt="new dash users icon"
+                    src="https://cdn4.iconfinder.com/data/icons/gray-user-management/512/charts-256.png">
+                  <!--
+                  <img width=64 alt="new dash users icon"
+                    src="http://www.iconarchive.com/download/i93802/custom-icon-design/silky-line-user/users-1.ico">
+                  -->
                   <br/>
-                  x new Dash users
                 </div>
               </div>
               <div class="col-md-6">
                 <p>Recycle Unused Wallets</p>
                 <div>
-                  paper wallets icon
+                  <img width=64 alt="paper wallets icon"
+                    src="https://www.shareicon.net/data/128x128/2015/10/25/661536_cards_512x512.png">
+                  <img width=64 alt="reclaim wallet icon"
+                    src="https://d30y9cdsu7xlg0.cloudfront.net/png/21197-200.png">
                   <br/>
-                  reclaim wallet icon
                 </div>
               </div>
               <button class="js-flow-reclaim btn btn-primary center">Check Status &gt;</button>
@@ -138,9 +157,9 @@
         <div class="row js-csv-view hidden">
           <div class="col-md-12">
             <label>Paper Wallet Public Keys:</label>
-            <textarea class="js-paper-wallet-keys form-control"
+            <pre><code><textarea class="js-paper-wallet-keys form-control"
               rows=10
-              placeholder="hint: paste a CSV or use newlines, spaces, or commas to separate keys"></textarea>
+              placeholder="hint: paste a CSV or use newlines, spaces, or commas to separate keys"></textarea></code></pre>
             <button class="js-csv-hide btn btn-link">hide csv</button>
           </div>
         </div>
@@ -159,8 +178,15 @@
           </div>
           <div class="row dd-component">
             <div class="col-md-9">
-              <label>Source Private Key (with all the money):</label>
+              <label>Send <span class="js-transaction-total">---</span> to this address:</label>
+              <br>
+              <canvas class="js-funding-qr-public"></canvas>
+              <span class="js-funding-key-public"></span>
+              <br>
+              <br>
+              <label>Or input existing Private Key:</label>
               <span class="js-funding-amount">--</span> mDash
+              <button class="js-funding-key-check">Recheck Balance</button>
               <input type="text" class="js-funding-key form-control"
                 placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
             </div>
@@ -186,9 +212,6 @@
           </div>
           <div class="row dd-component">
             <div class="col-md-9">
-              <label>Insight API:</label>
-              <input type="url" class="js-insight-base form-control"
-                placeholder="ex: https://api.example.com/insight-api-dash">
             </div>
             <div class="col-md-3">
               <label><input type="checkbox" class="js-paper-wallet-cache"> Cache Generated Wallets In-App</label>
@@ -225,13 +248,19 @@
             <input type="file" class="js-csv-import-file hidden" accept="text/*">
             <button type="button" class="js-csv-show btn btn-link">Paste CSV</button>
           </div>
+          <div class="col-md-12">
+            <div class="js-paper-wallet-load progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+            </div>
+          </div>
         </div>
+
         <div class="row js-csv-view hidden">
           <div class="col-md-12">
             <label>Paper Wallet Private Keys:</label>
-            <textarea class="js-paper-wallet-keys form-control"
+            <pre><code><textarea class="js-paper-wallet-keys form-control"
               rows=10
-              placeholder="hint: paste a CSV or use newlines, spaces, or commas to separate keys"></textarea>
+              placeholder="hint: paste a CSV or use newlines, spaces, or commas to separate keys"></textarea></code></pre>
             <button type="button" class="js-csv-show btn btn-link">show csv</button>
             <pre class="js-airdrop-balances fade"><code></code></pre>
           </div>
@@ -277,9 +306,6 @@
             <input type="text" class="js-transaction-fee form-control">
           </div>
           <div class="col-md-12">
-            <label>Insight API:</label>
-            <input type="url" class="js-insight-base form-control"
-              placeholder="ex: https://api.example.com/insight-api-dash">
             <button type="button" class="js-reclaim-commit btn btn-primary" disabled>Confirm Reclaim</button>
 
             <div class="js-reclaim-commit-complete hidden">
@@ -302,12 +328,11 @@
 
 
 
+      <!--
       <div class="dd-backdrop-dev">
         <div class="row">
           <div class="col-md-12">
             <h2>Developer Tools</h2>
-            <label>Dash Insight API:</label>
-            <input type="text" placeholder="i.e. https://api.example.com/insight">
           </div>
         </div>
         <div class="row">
@@ -331,8 +356,28 @@
           </div>
         </div>
       </div>
+      -->
 
-      <div><center>Copyright 2017. Created by AJ ONeal in association with Dash Hive. Funded with, for, and by Dash.</center></div>
+      <br>
+      <br>
+      <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+          <label>Insight API URL:</label>
+          <input type="url" class="js-insight-base form-control"
+            placeholder="ex: https://api.example.com/insight-api-dash">
+          <div><center><small>Want to run a private instance of this app?
+            Install <a target="_blank" href="https://github.com/dashhive/dashd-installer.sh">dashd</a>,
+            the <a target="_blank" href="https://github.com/dashhive/dash-insight-installer.sh">Dash Insight API</a>,
+            and host <a target="_blank" href="https://github.com/dashhive/dashdrop.html">DashDrop</a>.
+          </small></center></div>
+        </div>
+        <div class="col-md-2"></div>
+      </div>
+
+      <br>
+      <div><center>Copyright 2017. Created by Dash Hive with the help of @coolaj86, @2112, and @bobjohnbob. Funded with, for, and by Dash.</center></div>
+      <br>
 
 
     </div>
@@ -356,6 +401,7 @@
 
     <script src="js/bitcore-lib-dash.min.js"></script>
     <script src="node_modules/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="js/jquery-3.2.1.slim.min.js"></script>
     <script src="js/app.js"></script>
   </body>
