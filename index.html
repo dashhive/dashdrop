@@ -248,11 +248,6 @@
             <input type="file" class="js-csv-import-file hidden" accept="text/*">
             <button type="button" class="js-csv-show btn btn-link">Paste CSV</button>
           </div>
-          <div class="col-md-12">
-            <div class="js-paper-wallet-load progress">
-                <div class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
-            </div>
-          </div>
         </div>
 
         <div class="row js-csv-view hidden">
@@ -266,12 +261,16 @@
           </div>
         </div>
         <div class="row dd-component">
+          <div class="col-md-12">
+            <div class="js-paper-wallet-load progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+            </div>
+          </div>
           <div class="col-md-4">
-            Effectiveness
+            <span class="js-paper-wallet-percent">--</span>% effectiveness
             <br>
-            <span class="js-paper-wallet-percent">--</span>%
-            <br>
-            <span class="js-paper-wallet-used">---</span>/<span class="js-paper-wallet-loaded">---</span>
+            <span class="js-paper-wallet-used">---</span> of <span class="js-paper-wallet-loaded">---</span>
+            wallets claimed
           </div>
           <div class="col-md-4">
             Users spent <span class="js-paper-wallet-balance-out">----</span> of <span class="js-paper-wallet-balance-in">---</span>
@@ -283,9 +282,9 @@
             -->
           </div>
           <div class="col-md-4">
-            First Redemption: <span class="js-paper-wallet-least-recent">--/--/----</span>
+            First scan: <span class="js-paper-wallet-least-recent">--/--/----</span>
             <br>
-            Latest Redemption: <span class="js-paper-wallet-most-recent">--/--/----</span>
+            Latest scan: <span class="js-paper-wallet-most-recent">--/--/----</span>
           </div>
         </div>
         <div class="dd-component">

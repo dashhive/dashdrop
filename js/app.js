@@ -737,6 +737,7 @@ $(function () {
           otherMap[addr] = txs;
         }
       });
+      console.log('post results map');
 
       wallets.forEach(function (w) {
         if (resultsMap[w.publicKey]) {
@@ -746,7 +747,9 @@ $(function () {
           newMap[w.publicKey] = DashDom._createMap(w.publicKey);
         }
       });
+      console.log('pre csv');
       data.csv = DashDom._toCsv(wallets);
+      console.log('post csv');
 
       // TODO need to check which were loaded, unloaded
       var allCount = wallets.length;
@@ -785,6 +788,8 @@ $(function () {
       $('.js-paper-wallet-least-recent').text(new Date(leastRecent).toLocaleString());
       //$('.js-paper-wallet-least-recent').text(new Date(leastRecent).toLocaleDateString());
 
+      console.log('post ui update');
+
       data.reclaimUtxos = [];
       Object.keys(fullMap).forEach(function (key) {
         fullMap[key].utxos.forEach(function (utxo) {
@@ -798,13 +803,16 @@ $(function () {
           });
         });
       }
+      console.log('post array');
       data.reclaimKeypairs = wallets.slice(0);
+      console.log('pre estimate');
       data.transactionFee = DashDrop.estimateReclaimFee({
         utxos: data.reclaimUtxos
       , srcs: data.reclaimKeypairs.map(function (kp) { return kp.privateKey; }).filter(Boolean)
       , dst: null // data.fundingKey
       //, fee: null // config.transactionFee
       });
+      console.log('post estimate');
       console.log('data.transactionFee:', data.transactionFee);
       $('.js-transaction-fees').text(data.transactionFee);
       $('.js-transaction-fee').val(data.transactionFee);
