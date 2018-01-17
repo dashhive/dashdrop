@@ -30,6 +30,7 @@ $(function () {
     // udash per dash = 1000000
     // satoshis per dash = 100000000
   , dashMultiple: 1000000
+    // 0.00000001
   , SATOSHIS_PER_DASH: 100000000
   , outputsPerTransaction: 1000 // theroetically 1900 (100kb transaction)
   //, reclaimDirty: false
@@ -43,6 +44,21 @@ $(function () {
   };
 
   var DashDrop = {};
+  DashDrop.dashToUsd = function (s) {
+    return (parseFloat(s, 10) * config.conversions.dash_usd).toFixed(3).replace(/.$/, '');
+  };
+  DashDrop.centToDash = function (cent) {
+    return ((parseFloat(cent, 10) / (config.conversions.dash_usd * 100))).toFixed(8);
+  };
+  DashDrop.dollarToDash = function (dollar) {
+    return ((parseFloat(dollar, 10) / (config.conversions.dash_usd))).toFixed(8);
+  };
+  DashDrop.fromDash = function (d) {
+    return parseInt((parseFloat(d, 10) * config.SATOSHIS_PER_DASH).toFixed(0), 10);
+  };
+  DashDrop.fromSatoshi = function (s) {
+    return parseFloat((parseFloat(s, 10) / config.SATOSHIS_PER_DASH).toFixed(8), 10);
+  };
   DashDrop._getSourceAddress = function (sk) {
     var bitkey;
     data.sourceAddress = JSON.parse(localStorage.getItem('source-address') || null);
@@ -390,19 +406,19 @@ $(function () {
     console.log('$el', $el);
     console.log('$el.val()', $el.val());
     var keypair = DashDrop._keyToKeypair($el.val());
-		var qrPublic = new QRious({
-			element: document.querySelector('.js-funding-qr-public')
-		, value: keypair.publicKey
+    var qrPublic = new QRious({
+      element: document.querySelector('.js-funding-qr-public')
+    , value: keypair.publicKey
     , size: 256
     , background: '#CCFFFF'
-		});
-		var	qrPrivate;
-		if (keypair.privateKey) {
-			qrPrivate = new QRious({
-				element: document.querySelector('.js-funding-qr-private')
-			, value: keypair.privateKey
-			});
-		}
+    });
+    var qrPrivate;
+    if (keypair.privateKey) {
+      qrPrivate = new QRious({
+        element: document.querySelector('.js-funding-qr-private')
+      , value: keypair.privateKey
+      });
+    }
     if (keypair.privateKey && data.reclaimUtxos.length) {
       $('.js-reclaim-commit').prop('disabled', false);
     } else {
@@ -412,13 +428,13 @@ $(function () {
 
     DashDrop._updateFundingKey(keypair).then(function () {
       // whatever
-			$('.js-transaction-fee').val(config.transactionFee);
-			$('.js-transaction-fee').text(config.transactionFee);
+      $('.js-transaction-fee').val(config.transactionFee);
+      $('.js-transaction-fee').text(config.transactionFee);
 
-			$('.js-funding-amount').val(data.fundingTotal);
-			$('.js-funding-amount').text(data.fundingTotal);
+      $('.js-funding-amount').val(data.fundingTotal);
+      $('.js-funding-amount').text(data.fundingTotal);
 
-			DashDom.updateWalletAmount();
+      DashDom.updateWalletAmount();
     });
   };
   DashDrop._updateFundingKey = function (keypair) {
@@ -451,7 +467,7 @@ $(function () {
         };
         config.transactionFee = DashDrop.estimateFee(txOpts);
 
-				return config.transactionFee;
+        return config.transactionFee;
       });
     });
   };
@@ -780,10 +796,11 @@ $(function () {
       $('.js-paper-wallet-used').text(usedCount);
       $('.js-paper-wallet-loaded').text(loadedCount);
       $('.js-paper-wallet-balance').val(satoshis);
-      $('.js-paper-wallet-balance').text(satoshis);
-      $('.js-paper-wallet-balance-out').text(valIn); // it's gone out if it's been used as an input
-      //$('.js-paper-wallet-balance-out').text(valOut);
-      $('.js-paper-wallet-balance-in').text(valIn + satoshis);
+      $('.js-paper-wallet-balance').text((satoshis / config.SATOSHIS_PER_DASH).toFixed(8));
+      // it's gone out if it's been used as an input
+      $('.js-paper-wallet-balance-out').text((valIn / config.SATOSHIS_PER_DASH).toFixed(8));
+      //$('.js-paper-wallet-balance-out').text((valOut / config.SATOSHIS_PER_DASH).toFixed(8));
+      $('.js-paper-wallet-balance-in').text(((valIn + satoshis) / config.SATOSHIS_PER_DASH).toFixed(8));
       $('.js-paper-wallet-most-recent').text(new Date(mostRecent).toLocaleString());
       $('.js-paper-wallet-least-recent').text(new Date(leastRecent).toLocaleString());
       //$('.js-paper-wallet-least-recent').text(new Date(leastRecent).toLocaleDateString());
@@ -939,8 +956,8 @@ $(function () {
       window.alert("Error parsing CSV");
     });
     reader.addEventListener('load', function (ev) {
-			data.csv = ev.target.result;
-			$('.js-paper-wallet-keys').val(data.csv);
+      data.csv = ev.target.result;
+      $('.js-paper-wallet-keys').val(data.csv);
       console.log('data.csv:');
       console.log(data.csv);
       DashDom._updateWalletCsv($('.js-paper-wallet-keys'));
@@ -1087,6 +1104,29 @@ $(function () {
   $('.js-transaction-fee').val(config.transactionFee);
   $('.js-transaction-fee').text(config.transactionFee);
   $('[name=js-fee-schedule]').val(config.transactionFee);
+
+  function delimitNumbers(str) {
+    return (str + "").replace(/\b(\d+)((\.\d+)*)\b/g, function(a, b, c) {
+      return (b.charAt(0) > 0 && !(c || ".").lastIndexOf(".") ? b.replace(/(\d)(?=(\d{3})+$)/g, "$1,") : b) + c;
+    });
+  }
+
+  function init() {
+    return window.fetch(config.insightBaseUrl + "/currency", { mode: 'cors' }).then(function (resp) {
+      return resp.json().then(function (resp) {
+        config.conversions = resp.data;
+        $('.js-currency-dash-usd').text('$' + delimitNumbers(parseFloat(resp.data.dash_usd, 10).toFixed(2)));
+        $('.js-currency-btc-usd').text('$' + delimitNumbers(parseFloat(resp.data.btc_usd, 10).toFixed(2)));
+        $('.js-currency-btc-dash').text(delimitNumbers(parseFloat(resp.data.btc_dash, 10).toFixed(8)));
+        console.log('resp.data.dash_usd', resp.data.dash_usd);
+        console.log('resp.data.btc_dash', resp.data.btc_dash);
+        console.log('resp.data.btc_usd', resp.data.btc_usd);
+        return resp.data.dash_usd;
+      });
+    });
+  }
+
+  init();
   DashDom.updateTransactionTotal();
 
 
