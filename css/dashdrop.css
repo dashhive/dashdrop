@@ -30,22 +30,34 @@ h2 {
     color: #78b7e8;
 }
 
-.dd-logo img {
-    max-width: 12rem;
+.dd-header-logo {max-width: 10.5rem;}
+
+.dd-header {
+    /* margin-top: 3rem; */
+    display:  flex;
+    align-items: center;
+    justify-content:  space-between;
 }
 
-.dd-logo {
+.dd-header ul {
+  list-style-type: none;
+}
+
+.dd-header-buttons {
     display: flex;
-    align-items:  center;
+    flex-direction:  row;
+    align-items: center;
+    justify-content: flex-end;
+    padding:  0;
+    margin:  0;
+    width:  60%;
 }
 
 
-.row.dd-header {
-    margin-top: 3rem;
-}
+
 
 body {
-    padding-top: 2rem;
+    padding-top: 3.3rem;
 }
 
 .col-8.dd-spiel {
@@ -82,6 +94,7 @@ h3 {
 
 body {
     color: #777;
+    font-size: inherit;
 }
 
 .js-flow.js-flow-reclaim.fade.in {}
@@ -93,11 +106,15 @@ body {
 }
 
 html {
-    font-size: 16px;
+    font-size: 15px;
 }
 
 
-.btn-primary:disabled {background-color: #E3F4FD;border-color: #E3F4FD;opacity: .6;}
+.btn-primary:disabled {
+  background-color: #E3F4FD;
+  border-color: #E3F4FD;
+  opacity: .6;
+}
 
 .dd-or {
     display:  flex;
@@ -119,17 +136,6 @@ html {
     margin-right:  20px;
 }
 
-
-
-.dd-code-download .btn {
-    width:  9rem;
-    margin: 0;
-}
-
-.dd-code-download .col-md-4 {
-    text-align: center;
-    padding: 5px;
-}
 
 .dd-finalize-button .btn {
     font-size: 1.6rem;
@@ -160,4 +166,85 @@ html {
 
 .dd-import-claims .btn {
     margin-top:  0.7rem;
+}
+
+.dd-main-container {
+    width: 1180px;
+}
+
+.dd-header-buttons > * {
+    margin-left: 1rem;
+}
+
+
+/* These are required for google's material.io font icons */
+
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(./images/MaterialIcons-Regular.eot); /* For IE6-8 */
+  src: local('Material Icons'),
+    local('MaterialIcons-Regular'),
+    url(./MaterialIcons-Regular.woff2) format('woff2'),
+    url(./MaterialIcons-Regular.woff) format('woff'),
+    url(./MaterialIcons-Regular.ttf) format('truetype');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.2em;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}
+
+/* End google css for material.io */
+
+
+
+.dd-header-rates {
+  display:  flex;
+  flex-direction:  column;
+  margin:  0;
+  padding: 2rem 0 0 0;
+}
+
+
+
+.dd-header-buttons a { 
+  margin: 0 0 0 1rem; 
+}
+
+.btn {
+    border-radius: 2rem;
+    padding: 0.5rem 1.5rem 0.5rem 1.5rem;
+    font-size: inherit;
+}
+
+
+.btn i {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.dd-spiel-containter {
+    justify-content: center;
 }
