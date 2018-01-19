@@ -13,8 +13,7 @@
 
 h2 {
     color: #1E8CEB;
-    margin-bottom: 1.9rem;
-    margin-top: 3rem;
+    margin: 1em;
     text-align:  center;
     font-size: 2rem;
     font-weight: 300;
@@ -23,7 +22,7 @@ h2 {
 .dd-sub-spiel {
     text-align: center;
     color: #999;
-    font-size: 1.4rem;
+    font-size: 1.38rem;
 }
 
 .dd-sub-spiel a {
@@ -33,10 +32,10 @@ h2 {
 .dd-header-logo {max-width: 10.5rem;}
 
 .dd-header {
-    /* margin-top: 3rem; */
     display:  flex;
     align-items: center;
     justify-content:  space-between;
+    padding-bottom: 7rem;
 }
 
 .dd-header ul {
@@ -68,10 +67,10 @@ body {
 .dd-component {
     border: solid #dde5ed 1px;
     border-radius: 8px;
-    margin: 18px;
+    margin: 1.2rem;
     transition: max-height 0.25s ease-in;
-    max-height:  10000px;
-    padding: 30px;
+    width: 37%;
+    padding: 30px 30px 20px 30px;
 }
 
 .btn-primary {
@@ -82,19 +81,26 @@ body {
     margin-top: 15px;
 }
 
-.dd-component-row {margin-left: -20px;margin-right: -20px;}
+.dd-component-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    padding-top: 1rem;
+    /* align-items: stretch; */
+}
 
 
 
 h3 {
     color: #9dafc0;
     font-size:  1.4rem;
-    margin-bottom: 1rem;
+    margin: 0 0 1em 0;
 }
 
 body {
     color: #777;
     font-size: inherit;
+    line-height: 1.5;
 }
 
 .js-flow.js-flow-reclaim.fade.in {}
@@ -170,6 +176,7 @@ html {
 
 .dd-main-container {
     width: 1180px;
+    margin: auto;
 }
 
 .dd-header-buttons > * {
@@ -235,7 +242,7 @@ html {
 
 .btn {
     border-radius: 2rem;
-    padding: 0.5rem 1.5rem 0.5rem 1.5rem;
+    padding: 0.5em 1.5em 0.5em 1.5em;
     font-size: inherit;
 }
 
@@ -247,4 +254,38 @@ html {
 
 .dd-spiel-containter {
     justify-content: center;
+}
+
+
+.dd-spiel {
+    padding: 0 22% 0 22%;
+}
+
+.dd-component-icons {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6em 0 0.6em 0;
+}
+
+.dd-component-icons > div img {
+    float: left;
+    margin-right: 1em;
+    width:  2.5rem;
+}
+
+.dd-component-icons > div {
+    width: 48.5%;
+    font-size: 0.9em;
+    padding: 1em;
+    border: solid 1px #ccc;
+    border-radius: 4px;
+    background-color: #f9f9fb;
+}
+
+.dd-component p {
+    min-height: 4.5em;
+}
+
+.dd-component .btn {
+    font-size: 0.9em;
 }

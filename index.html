@@ -10,9 +10,9 @@
   </head>
 
   <body>
-    <div class="dd-screen-only dd-main-container container">
-      <div class="row"><div class="col-xs-12 dd-header">
-          <img class="dd-header-logo" src="./images/logo_preview.png" />
+    <div class="dd-screen-only dd-main-container">
+      <div class="dd-header">
+        <img class="dd-header-logo" src="./images/logo_preview.png" />
         <ul class="dd-header-rates">
           <li>Dash <span>1.0000</span></li>
           <li><span class="js-currency-dash-usd">---</span> USD</li>
@@ -28,10 +28,10 @@
                 <i class="material-icons dd-download-icon">file_download</i> Download ZIP
               </a></li>
         </ul>
-      </div></div>
+      </div>
 
 
-      <div class="row dd-spiel-containter"><div class="col-xs-8 dd-spiel">
+      <div class="dd-spiel-containter"><div class="dd-spiel">
         <h2>Tools for Paper Wallet Giveaways</h2>
         <p class="dd-sub-spiel">DashDrop was developed by <a href="https://github.com/dashhive">DashHive</a> as a tool to help
           community members initiate, track, and reclaim paper wallets at giveaways, conferences, and
@@ -41,65 +41,44 @@
       </div></div>
 
       <div class="js-flow js-flow-home">
-        <div class="row justify-content-center dd-component-row">
-          <div class="col-xs-5 dd-component">
+        <div class="dd-component-row">
+          <div class="dd-component">
             <h3>Disburse Funds</h3>
-            <p>Choose a Funding Source and destination addreses.</p>
-            <p>Generate and print secure wallets or import CSV from paper.dash.org</p>
-            <div class="row">
-              <div class="col-xs-6">
-                <p>Import Paper CSV</p>
-                <div>
-                  <img width=64 alt="csv icon"
-                    src="https://png.icons8.com/wired/2x/csv.png">
-                  <img width=64 alt="paper wallet icon"
-                    src="http://www.iconarchive.com/download/i76782/pixelkit/swanky-outlines/06-Wallet.ico">
-                </div>
+              <p>Choose a Funding Source and destination addreses. Generate and print secure wallets or import CSV from paper.dash.org</p>
+            <div class="dd-component-icons">
+              <div>
+                <img width=64 alt="csv icon"
+                  src="https://png.icons8.com/wired/2x/csv.png">
+                Import Paper CSV
               </div>
-              <div class="col-xs-6">
-                <p>Generate Paper Wallets</p>
-                <div>
-                  <img width=64 alt="printer icon"
-                    src="https://image.flaticon.com/icons/png/128/34/34441.png">
-                  <img width=64 alt="paper and scissors icon"
-                    src="https://cdn0.iconfinder.com/data/icons/essentials-line/100/Cut-128.png">
-                  <br/>
-                </div>
+              <div>
+                <img width=64 alt="printer icon"
+                  src="https://image.flaticon.com/icons/png/128/34/34441.png">
+                Generate Paper Wallets
               </div>
-              <button class="js-flow-generate btn btn-primary center">Spread Dash &gt;</button>
             </div>
+            <button class="js-flow-generate btn btn-primary center">Spread Dash &rarr;</button>
           </div>
-          <div class="col-xs-5 dd-component">
+          <div class="dd-component">
             <h3>Review Giveaway</h3>
-            <p>See the impact your giveaway has had.</p>
-            <p>Reclaim unused wallets for another round.</p>
-            <div class="row">
-              <div class="col-xs-6">
-                <p>Measure Outreach</p>
-                <div>
-                  <img width=64 alt="x% claimed, $x.xk spread icon"
-                    src="https://cdn1.iconfinder.com/data/icons/business-377/128/clipboard-charts-3-256.png">
-                  <img width=64 alt="new dash users icon"
-                    src="https://cdn4.iconfinder.com/data/icons/gray-user-management/512/charts-256.png">
-                  <!--
-                  <img width=64 alt="new dash users icon"
-                    src="http://www.iconarchive.com/download/i93802/custom-icon-design/silky-line-user/users-1.ico">
-                  -->
-                  <br/>
-                </div>
+            <p>See the impact your giveaway has had. Reclaim unused wallets for another round.</p>
+            <div class="dd-component-icons">
+              <div>
+                <img width=64 alt="new dash users icon"
+                  src="https://cdn4.iconfinder.com/data/icons/gray-user-management/512/charts-256.png">
+                Measure Outreach
+                <!--
+                <img width=64 alt="new dash users icon"
+                  src="http://www.iconarchive.com/download/i93802/custom-icon-design/silky-line-user/users-1.ico">
+                -->
               </div>
-              <div class="col-xs-6">
-                <p>Recycle Unused Wallets</p>
-                <div>
-                  <img width=64 alt="paper wallets icon"
-                    src="https://www.shareicon.net/data/128x128/2015/10/25/661536_cards_512x512.png">
-                  <img width=64 alt="reclaim wallet icon"
-                    src="https://d30y9cdsu7xlg0.cloudfront.net/png/21197-200.png">
-                  <br/>
-                </div>
+              <div>
+                <img width=64 alt="reclaim wallet icon"
+                  src="https://d30y9cdsu7xlg0.cloudfront.net/png/21197-200.png">
+                Recycle Unused Wallets
               </div>
-              <button class="js-flow-reclaim btn btn-primary center">Check Status &gt;</button>
             </div>
+            <button class="js-flow-reclaim btn btn-primary center">Check Status &rarr;</button>
           </div>
         </div>
       </div>
@@ -335,23 +314,19 @@
 
       <br>
       <br>
-      <div class="row">
-        <div class="col-xs-2"></div>
-        <div class="col-xs-8">
+      <div class="dd-insight-info">
           <label>Insight API URL:</label>
           <input type="url" class="js-insight-base form-control"
             placeholder="ex: https://api.example.com/insight-api-dash">
-          <div><center><small>Want to run a private instance of this app?
+            <span>Want to run a private instance of this app?
             Install <a target="_blank" href="https://github.com/dashhive/dashd-installer.sh">dashd</a>,
             the <a target="_blank" href="https://github.com/dashhive/dash-insight-installer.sh">Dash Insight API</a>,
             and host <a target="_blank" href="https://github.com/dashhive/dashdrop.html">DashDrop</a>.
-          </small></center></div>
-        </div>
-        <div class="col-xs-2"></div>
+          </span>
       </div>
 
       <br>
-      <div><center>Copyright 2017. Created by Dash Hive with the help of @coolaj86, @2112, and @bobjohnbob. Funded with, for, and by Dash.</center></div>
+      <div><center>Copyright 2018. Created by Dash Hive with the help of @coolaj86, @2112, and @thejshaver. Funded with, for, and by Dash.</center></div>
       <br>
 
 
