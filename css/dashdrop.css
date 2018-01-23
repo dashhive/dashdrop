@@ -10,6 +10,16 @@
   background-color: #CCECFF;
 }
 
+html {
+    font-size: 15px;
+}
+
+body {
+    padding-top: 3.3rem;
+    color: #62717f;
+    font-size: inherit;
+    line-height: 1.5;
+}
 
 h2 {
     color: #1E8CEB;
@@ -17,6 +27,31 @@ h2 {
     text-align:  center;
     font-size: 2rem;
     font-weight: 300;
+}
+
+h3 {
+    color: #8ca2b5;
+    font-size:  1.4rem;
+    margin: 0 0 2em 0;
+}
+
+h4 {
+    color: #8ca2b5;
+    font-weight: 300;
+    margin: 0;
+    margin-bottom: 1em;
+    text-align: left;
+    display: block;
+    font-size: 1.1em;
+}
+
+.form-control {
+    border-radius: 2px;
+    border: solid #ddd 1px;
+    box-shadow: none;
+}
+.dd-no-margins {
+    margin: 0;
 }
 
 .dd-sub-spiel {
@@ -52,58 +87,22 @@ h2 {
     width:  60%;
 }
 
-
-
-
-body {
-    padding-top: 3.3rem;
-}
-
-.col-8.dd-spiel {
-    padding-top: 5rem;
-    padding-bottom: 5rem;
-}
-
 .dd-component {
     border: solid #dde5ed 1px;
     border-radius: 8px;
     margin: 1.2rem;
     transition: max-height 0.25s ease-in;
-    width: 37%;
-    padding: 30px 30px 20px 30px;
+    width: 76%;
+    padding: 60px 60px 30px 60px;
 }
 
 .btn-primary {
     color: #1e8ceb;
-    background-color:  #E3F4FD;
-    border-color:  #E3F4FD;
+    background-color: #dcf5fd;
+    border-color: #E3F4FD;
     background-image: none;
-    margin-top: 15px;
+    /* margin-top: 15px; */
 }
-
-.dd-component-row {
-    display: flex;
-    justify-content: center;
-    flex-direction: row;
-    padding-top: 1rem;
-    /* align-items: stretch; */
-}
-
-
-
-h3 {
-    color: #8ca2b5;
-    font-size:  1.4rem;
-    margin: 0 0 1em 0;
-}
-
-body {
-    color: #62717f;
-    font-size: inherit;
-    line-height: 1.5;
-}
-
-.js-flow.js-flow-reclaim.fade.in {}
 
 .btn-primary:hover {
     background-image: none;
@@ -112,35 +111,34 @@ body {
     color: #1e8ceb;
 }
 
-html {
-    font-size: 15px;
-}
-
-
 .btn-primary:disabled {
-  background-color: #E3F4FD;
+  background-color: #d3e4eD;
   border-color: #E3F4FD;
+  color: #1e5c9b;
   opacity: .6;
 }
 
-.dd-or {
-    display:  flex;
-    align-items:  center;
+
+.dd-component-container {
+    display: flex;
     justify-content: center;
+    flex-direction: row;
+    padding-top: 1rem;
+    flex-wrap: wrap;
 }
 
+.dd-or {font-size: 1.5em;padding-top: 2em;}
+
 .dd-button-row {
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    width: 100%;
     padding-top: 30px;
 }
 
-.dd-no-margins {
-    margin: 0;
-}
-
 .dd-button-row .btn {
-    margin-top: 0px;
-    margin-left: 20px;
-    margin-right:  20px;
+    margin-left: 1.5em;
 }
 
 
@@ -149,9 +147,8 @@ html {
 }
 
 .dd-import-buttons {
-    margin-top: 2rem;
     display: flex;
-    justify-content: space-around;
+    justify-content: flex-start;
     align-items: flex-start;
 }
 
@@ -161,14 +158,20 @@ html {
 }
 
 .dd-generate-new {
-    padding-left: 3rem;
-    padding-right:  3rem;
+    width: 44%;
+}
+
+.dd-step-row {
+    flex-direction: column;
+    display: flex;
+    margin: 1em 0 2em 0;
+    flex-wrap: wrap;
 }
 
 .dd-finalize-button {
-    display:  flex;
-    justify-content: center;
-    align-items:  center;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
 }
 
 .dd-import-claims .btn {
@@ -262,6 +265,8 @@ html {
     padding: 0 22% 0 22%;
 }
 
+
+
 .dd-component-icons {
     display: flex;
     justify-content: space-between;
@@ -283,12 +288,13 @@ html {
     background-color: #f9f9fb;
 }
 
-.dd-component p {
+.dd-component.dd-component-pair p {
     min-height: 4.5em;
 }
 
 .dd-component .btn {
     font-size: 0.9em;
+    margin-top: 1em;
 }
 
 .dd-insight-info {
@@ -298,32 +304,24 @@ html {
     width: 77%;
     margin: auto;
     margin-top: 5em;
+    margin-bottom: 2em;
     text-align: center;
     color: #8ca2b5;
     font-size: 0.9rem;
 }
 
-h4 {
-    color: #8ca2b5;
-    font-weight: 300;
-    margin: 0;
-    text-align: left;
-    display: block;
-    font-size: 1.1em;
-}
 
 .dd-insight-info input {
     padding: 0 1em 0 1em;
     height: 100%;
     border: solid #dde5ed 1px;
     border-width: 0 0 0 1px;
-    width: 80%;
+    width: 79%;
     display: inline-block;
     border-radius: 0;
     box-shadow:  none;
     margin-left: 1em;
     font-weight: 500;
-    margin-right: 1em;
 }
 
 .dd-insight-info input:before {
@@ -349,11 +347,205 @@ h4 {
     padding-left: 1em;
     font-weight: 300;
     background-color: #f9f9fb;
-    margin: 2em;
+    margin: 1em 0 2em 0;
+    overflow: hidden;
 }
 
 
 .dd-insight-info label img {
-    width: 1.5em;
+    width: 5.16em;
+    vertical-align: initial;
+    margin: 0px;
+    float: right;
+    padding: 0.9em;
+    padding-left: 2.9em;
+    background-color: white;
+}
+
+.dd-credits {
     text-align: center;
+    margin: 2em 0 1em 0;
+}
+
+.dd-component.dd-component-pair {
+    width: 37%;
+    padding: 30px 30px 20px 30px;
+}
+
+.dd-first-step {
+    margin-top: 4em;
+    justify-content: space-between;
+    flex-direction: row;
+}
+
+.dd-component h4 {
+    font-size: 0.86rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5em;
+}
+
+.import-exising {
+    width: 18.7em;
+}
+
+.dd-dnd-csv {
+    border: dashed #e5e5e5 2px;
+    display: flex;
+    height: 7em;
+    justify-content: center;
+}
+
+.dd-dnd-csv img {
+    width: 0.87em;
+}
+
+.dd-component .btn-link {
+    font-size: 1em;
+    padding: 0;
+    border: none;
+}
+
+.dd-import-buttons .btn {
+    margin-right: 1.5em;
+}
+
+.dd-warning {
+    color: #e55;
+}
+
+.dd-csv-view {
+    width: 100%;
+}
+
+.dd-csv-view pre {
+    margin-bottom: 4em;
+    padding: 0;
+    border: none;
+}
+
+.dd-wallet-key-warning {
+    padding-right: 7em;
+}
+
+.dd-print-save-subtext {
+    text-align: right;
+    font-size: 0.8em;
+    color: rgb(140, 162, 181);
+    position: relative;
+    top: 3em;
+    margin-top: -2em;
+}
+
+.dd-dist-transaction-amounts {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    flex-direction: row;
+    margin: 2em 0 1em 0;
+}
+
+.dd-dist-transaction-amounts label {
+    width: 21%;
+}
+
+.dd-csv-view textarea {
+    resize: vertical;
+    border-radius: 2px;
+    border: solid #ddd 1px;
+    box-shadow: none;
+    padding: 1.7em;
+}
+
+.dd-dist-address {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: flex-end;
+    width: 100%;
+    margin-top: 1em;
+}
+
+.dd-dist-qr-address {
+    width: 256px;
+}
+
+.dd-dist-existing-address {
+    width: 465px;
+    padding-bottom: 1em;
+}
+
+.btn-primary:disabled:hover {
+    color: #bbb;
+}
+
+.dd-finalize-error {
+    color: #E55;
+    margin: 0.5em 0 0.5em 0;
+}
+
+.dd-finalize-button .btn {
+    font-size: 1.03em;
+    margin: 0;
+}
+
+.dd-finalize-button label {
+    font-weight: 400;
+    color: #8ca2b5;
+}
+
+.dd-finalize-button > div {
+    display:  flex;
+    flex-direction:  column;
+    align-items:  flex-end;
+}
+
+
+.dd-load-local {
+    width: 18.7em;
+}
+
+.dd-import-claims {
+    width: 18.7em;
+}
+
+.dd-wallet-distribution-progress {width: 100%;}
+
+.dd-wallet-distribution {
+    margin: 0 2em 5em 2em;
+    justify-content: space-around;
+    flex-direction: row;
+}
+
+
+.dd-reclaim-details {
+    display:  flex;
+    justify-content: space-around;
+}
+
+.dd-reclaim-dash {
+    margin: 0 2em 0 2em;
+}
+
+.dd-reclaim-dash label {
+    margin: 1.5em 0 1.5em 0;
+}
+
+.dd-source-wallet-balance .btn {
+    margin: 0;
+    vertical-align: initial;
+    padding-left: 4em;
+}
+
+.dd-source-wallet-balance {
+    margin-top: 5em;
+}
+
+
+.btn.btn-primary:active, .btn.btn-primary:focus {background-color: #E3F4FD;border: none;color: #4593ee;outline: none;}
+
+.dd-reclaim-finalize {
+    font-size: 1.2em;
+    display:  flex;
+    justify-content: flex-end;
 }

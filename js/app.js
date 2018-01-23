@@ -294,6 +294,7 @@ $(function () {
 
     config.transactionFee = DashDom.estimateFee(config, data);
     DashDom.updateTransactionTotal();
+    view.csv.show();
   };
   DashDom._debounceWq = null;
   DashDom.updateWalletQuantity = function () {
@@ -1013,6 +1014,7 @@ $(function () {
   //
   DashDom.views.generate = function () {
     DashDom.generateWallets();
+    view.csv.hide();
     data.fundingKeypair = DashDrop._getSourceAddress();
     data.fundingKey = data.fundingKeypair.privateKey;
     $('.js-funding-key').val(data.fundingKeypair.privateKey);
