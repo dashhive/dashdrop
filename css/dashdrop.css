@@ -9,6 +9,9 @@
 .dd-backdrop-dev {
   background-color: #CCECFF;
 }
+.dd-paper-wallet-keys {
+  font-size: 9pt;
+}
 
 html {
     font-size: 15px;
@@ -240,8 +243,8 @@ h4 {
 
 
 
-.dd-header-buttons a { 
-  margin: 0 0 0 1rem; 
+.dd-header-buttons a {
+  margin: 0 0 0 1rem;
 }
 
 .btn {
