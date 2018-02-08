@@ -24,7 +24,8 @@ $(function () {
   , walletQuantity: 100
   , minTransactionFee: 1000 // 1000 // 0 seems to give the "insufficient priority" error
   , transactionFee: 1000 // 1000 // 0 seems to give the "insufficient priority" error
-  , walletAmount: 10000
+  , walletAmount: 1000000
+  //, walletAmount: 10000
   , serialize: { disableDustOutputs: true, disableSmallFees: true }
     // mdash per dash = 1000
     // udash per dash = 1000000
@@ -44,8 +45,16 @@ $(function () {
   };
 
   var DashDrop = {};
+  // 10000 dash satoshi is 0.0001 dash
+  // The native unit is the (dash) satoshi
   DashDrop.dashToUsd = function (s) {
     return (parseFloat(s, 10) * config.conversions.dash_usd).toFixed(3).replace(/.$/, '');
+  };
+  DashDrop.toUsd = function (s) {
+    return (parseFloat(DashDrop.toDash(s), 10) * config.conversions.dash_usd).toFixed(3).replace(/.$/, '');
+  };
+  DashDrop.fromUsd = function (dollar) {
+    return DashDrop.fromDash(((parseFloat(dollar, 10) / (config.conversions.dash_usd))).toFixed(8));
   };
   DashDrop.centToDash = function (cent) {
     return ((parseFloat(cent, 10) / (config.conversions.dash_usd * 100))).toFixed(8);
@@ -56,7 +65,7 @@ $(function () {
   DashDrop.fromDash = function (d) {
     return parseInt((parseFloat(d, 10) * config.SATOSHIS_PER_DASH).toFixed(0), 10);
   };
-  DashDrop.fromSatoshi = function (s) {
+  DashDrop.toDash = DashDrop.fromSatoshi = function (s) {
     return parseFloat((parseFloat(s, 10) / config.SATOSHIS_PER_DASH).toFixed(8), 10);
   };
   DashDrop._getSourceAddress = function (sk) {
@@ -385,12 +394,16 @@ $(function () {
     config.estimatedTransactionFee = DashDom.estimateFee(config, data);
     config.transactionTotal = (config.transactionCount * config.transactionFee)
       + (config.walletAmount * config.walletQuantity);
-    $('.js-transaction-fee').val(config.transactionFee);
-    $('.js-transaction-fee').text(config.transactionFee);
+    $('input.js-transaction-fee').val(DashDrop.toDash(config.transactionFee));
+    $('span.js-transaction-fee').text(DashDrop.toDash(config.transactionFee));
+    $('input.js-transaction-fee-usd').val(DashDrop.toUsd(config.transactionFee));
+    $('span.js-transaction-fee-usd').text(DashDrop.toUsd(config.transactionFee));
     $('.js-transaction-count').val(config.transactionCount);
     $('.js-transaction-count').text(config.transactionCount);
-    $('.js-transaction-total').val(config.transactionTotal);
-    $('.js-transaction-total').text(config.transactionTotal);
+    $('input.js-transaction-total').val(DashDrop.toDash(config.transactionTotal));
+    $('span.js-transaction-total').text(DashDrop.toDash(config.transactionTotal));
+    $('input.js-transaction-total-usd').val(DashDrop.toUsd(config.transactionTotal));
+    $('span.js-transaction-total-usd').text(DashDrop.toUsd(config.transactionTotal));
     if (data.fundingKey && config.transactionTotal <= data.fundingTotal) {
       $('.js-transaction-commit-error').addClass('hidden');
       $('button.js-transaction-commit').prop('disabled', false);
@@ -429,11 +442,15 @@ $(function () {
 
     DashDrop._updateFundingKey(keypair).then(function () {
       // whatever
-      $('.js-transaction-fee').val(config.transactionFee);
-      $('.js-transaction-fee').text(config.transactionFee);
+      $('.js-transaction-fee').val(DashDrop.toDash(config.transactionFee));
+      $('.js-transaction-fee').text(DashDrop.toDash(config.transactionFee));
+      $('.js-transaction-fee-usd').val(DashDrop.toUsd(config.transactionFee));
+      $('.js-transaction-fee-usd').text(DashDrop.toUsd(config.transactionFee));
 
-      $('.js-funding-amount').val(data.fundingTotal);
-      $('.js-funding-amount').text(data.fundingTotal);
+      $('.js-funding-amount').val(DashDrop.toDash(data.fundingTotal));
+      $('.js-funding-amount').text(DashDrop.toDash(data.fundingTotal));
+      $('.js-funding-amount-usd').val(DashDrop.toUsd(data.fundingTotal));
+      $('.js-funding-amount-usd').text(DashDrop.toUsd(data.fundingTotal));
 
       DashDom.updateWalletAmount();
     });
@@ -483,22 +500,33 @@ $(function () {
     };
     return DashDrop.estimateFee(txOpts);
   };
+  DashDom.updateWalletAmountDash = function (ev) {
+    config._walletAmount = DashDrop.fromDash($('input.js-paper-wallet-amount').val());
+    $('input.js-paper-wallet-amount-usd').val(DashDrop.toUsd(config._walletAmount));
+    $('span.js-paper-wallet-amount-usd').text(DashDrop.toUsd(config._walletAmount));
+    $('span.js-paper-wallet-amount').text(DashDrop.toDash(config._walletAmount));
+    DashDom.updateWalletAmount(ev);
+  };
+  DashDom.updateWalletAmountUsd = function (ev) {
+    config._walletAmount = DashDrop.fromUsd($('input.js-paper-wallet-amount-usd').val());
+    $('input.js-paper-wallet-amount').val(DashDrop.toDash(config._walletAmount));
+    $('span.js-paper-wallet-amount').text(DashDrop.toDash(config._walletAmount));
+    $('span.js-paper-wallet-amount-usd').text(DashDrop.toUsd(config._walletAmount));
+    DashDom.updateWalletAmount(ev);
+  };
   DashDom.updateWalletAmount = function () {
-    var walletAmount = parseInt($('.js-paper-wallet-amount').val(), 10);
 
-    if (!config.walletAmount && !walletAmount) {
+    if (!config.walletAmount && !config._walletAmount) {
       config.walletAmount = Math.floor(
         (data.fundingTotal - (config.transactionCount * config.transactionFee)) / config.walletQuantity
       );
-      $('.js-paper-wallet-amount').val(config.walletAmount);
-      $('.js-paper-wallet-amount').text(config.walletAmount);
     }
 
-    if (!walletAmount || (config.walletAmount && config.walletAmount === walletAmount)) {
+    if (!config._walletAmount || (config.walletAmount && config.walletAmount === config._walletAmount)) {
       return true;
     }
 
-    config.walletAmount = walletAmount;
+    config.walletAmount = config._walletAmount;
     DashDom.updateTransactionTotal();
   };
   DashDom.commitDisburse = function () {
@@ -589,6 +617,7 @@ $(function () {
       $('body').off('keyup', '.js-paper-wallet-quantity', DashDom.updateWalletQuantity);
       // Don't allow anything else
       $('input.js-transaction-fee').prop('disabled', true);
+      $('input.js-transaction-fee-usd').prop('disabled', true);
       $('input.js-funding-key').prop('disabled', true);
       $('input.js-paper-wallet-amount').prop('disabled', true);
     });
@@ -832,8 +861,10 @@ $(function () {
       });
       console.log('post estimate');
       console.log('data.transactionFee:', data.transactionFee);
-      $('.js-transaction-fees').text(data.transactionFee);
-      $('.js-transaction-fee').val(data.transactionFee);
+      $('span.js-transaction-fees').text(DashDrop.toDash(data.transactionFee));
+      $('input.js-transaction-fee').val(DashDrop.toDash(data.transactionFee));
+      $('span.js-transaction-fees-usd').text(DashDrop.toUsd(data.transactionFee));
+      $('input.js-transaction-fee-usd').val(DashDrop.toUsd(data.transactionFee));
       $('.js-paper-wallet-load .progress-bar').css({ width: '100%' });
       $('.js-paper-wallet-load .progress-bar').text('100%');
     });
@@ -988,11 +1019,20 @@ $(function () {
     view.csv.show();
     $('.js-paper-wallet-keys').removeAttr('placeholder');
   };
-  DashDom.updateFeeSchedule = function () {
+  DashDom.updateFeeScheduleDash = function () {
     var $el = $(this);
-    var fee = parseInt($el.val(), 10);
-    if (fee && !isNaN(fee)) {
-      config.transactionFee = fee;
+    config._fee = DashDrop.fromDash($el.val());
+    DashDom.updateFeeSchedule();
+  };
+  DashDom.updateFeeScheduleUsd = function () {
+    var $el = $(this);
+    config._fee = DashDrop.fromUsd($el.val());
+    DashDom.updateFeeSchedule();
+  };
+  DashDom.updateFeeSchedule = function () {
+    // XXX xfer
+    if (config._fee && !isNaN(config._fee)) {
+      config.transactionFee = config._fee;
       DashDom.updateTransactionTotal();
     }
     return true;
@@ -1085,8 +1125,10 @@ $(function () {
     $('.js-funding-key').trigger('keyup');
   });
   $('body').on('click', '.js-transaction-commit', DashDom.commitDisburse);
-  $('body').on('keyup', '.js-paper-wallet-amount', DashDom.updateWalletAmount);
-  $('body').on('keyup', '.js-transaction-fee', DashDom.updateFeeSchedule);
+  $('body').on('keyup', '.js-paper-wallet-amount', DashDom.updateWalletAmountDash);
+  $('body').on('keyup', '.js-paper-wallet-amount-usd', DashDom.updateWalletAmountUsd);
+  $('body').on('keyup', '.js-transaction-fee', DashDom.updateFeeScheduleDash);
+  $('body').on('keyup', '.js-transaction-fee-usd', DashDom.updateFeeScheduleUsd);
 
   // Reclaim Related
   $('body').on('click', '.js-reclaim-commit', DashDom.commitReclaim);
@@ -1099,13 +1141,8 @@ $(function () {
   $('.js-insight-base').text(config.insightBaseUrl);
   $('.js-paper-wallet-cache').prop('checked', 'checked');
   $('.js-paper-wallet-cache').removeProp('checked');
-  $('.js-paper-wallet-amount').val(config.walletAmount);
-  $('.js-paper-wallet-amount').text(config.walletAmount);
   $('.js-paper-wallet-quantity').val(config.walletQuantity);
   $('.js-paper-wallet-quantity').text(config.walletQuantity);
-  $('.js-transaction-fee').val(config.transactionFee);
-  $('.js-transaction-fee').text(config.transactionFee);
-  $('[name=js-fee-schedule]').val(config.transactionFee);
 
   function delimitNumbers(str) {
     return (str + "").replace(/\b(\d+)((\.\d+)*)\b/g, function(a, b, c) {
@@ -1123,15 +1160,29 @@ $(function () {
         console.log('resp.data.dash_usd', resp.data.dash_usd);
         console.log('resp.data.btc_dash', resp.data.btc_dash);
         console.log('resp.data.btc_usd', resp.data.btc_usd);
+
+        $('input.js-paper-wallet-amount').val(DashDrop.toDash(config.walletAmount));
+        $('span.js-paper-wallet-amount').text(DashDrop.toDash(config.walletAmount));
+        $('input.js-paper-wallet-amount-usd').val(DashDrop.toUsd(config.walletAmount));
+        $('span.js-paper-wallet-amount-usd').text(DashDrop.toUsd(config.walletAmount));
+        $('input.js-transaction-fee').val(DashDrop.toDash(config.transactionFee));
+        $('span.js-transaction-fee').text(DashDrop.toDash(config.transactionFee));
+        $('input.js-transaction-fee-usd').val(DashDrop.toUsd(config.transactionFee));
+        $('span.js-transaction-fee-usd').text(DashDrop.toUsd(config.transactionFee));
+        $('[name=js-fee-schedule]').val(DashDrop.toDash(config.transactionFee));
+        $('[name=js-fee-schedule-usd]').val(DashDrop.toUsd(config.transactionFee));
+
+        DashDom.updateTransactionTotal();
+
         return resp.data.dash_usd;
       });
     });
   }
 
   init();
-  DashDom.updateTransactionTotal();
 
 
   DEBUG_DASH_AIRDROP.config = config;
   DEBUG_DASH_AIRDROP.data = data;
+  window.DashDrop = DashDrop;
 });

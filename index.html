@@ -136,7 +136,9 @@
           <div class="dd-dist-transaction-amounts">
             <label>Amount per Wallet:
             <input type="text" class="js-paper-wallet-amount form-control"
-              placeholder="ex: 3000000 (about $25)">
+              placeholder="ex: 0.01">
+            $<input type="text" class="js-paper-wallet-amount-usd form-control"
+              placeholder="ex: 5.00">
               </label>
               <!--
               <label><input type="radio" name="js-fee-schedule" value="100000"> InstantSend</label>
@@ -145,17 +147,22 @@
               -->
               <label>Per Transaction Fee:
                 <input type="text" class="js-transaction-fee form-control">
+                $<input type="text" class="js-transaction-fee-usd form-control">
               </label>
                 <label>Num of Transactions:
               <input type="text" class="js-transaction-count form-control" disabled>
                 </label>
               <label>Total:
                 <input type="text" class="js-transaction-total form-control" disabled>
+                $<input type="text" class="js-transaction-total-usd form-control" disabled>
               </label>
             </div>
             <div class="dd-dist-address ">
               <div class="dd-dist-qr-address">
-                <label>Send <span class="js-transaction-total">---</span> to this address:</label>
+                <label>Send
+                  $<span class="js-transaction-total-usd">---</span>
+                  <span class="js-transaction-total">---</span>
+                  to this address:</label>
                 <canvas class="js-funding-qr-public"></canvas>
                 <span class="js-funding-key-public"></span>
               </div>
@@ -169,7 +176,9 @@
                     placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
                 </div>
                 <div class="dd-source-wallet-balance">
-                  <label>Current Balance:</label> <span class="js-funding-amount">--</span> mDash
+                  <label>Current Balance:</label>
+                    <span class="js-funding-amount">--</span> mDash
+                    $<span class="js-funding-amount-usd">--</span>
                   <button class="js-funding-key-check btn btn-link">Recheck Balance</button>
                 </div>
               </div>
