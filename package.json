@@ -15,6 +15,7 @@
   "dependencies": {
     "bitcore-lib-dash": "^0.15.0",
     "bluebird": "^3.5.1",
+    "qrcode": "^1.2.0",
     "request": "^2.83.0"
   }
 }
