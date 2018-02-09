@@ -146,7 +146,7 @@
               <label><input type="radio" name="js-fee-schedule" value="1000" checked> 1000 mDash</label>
               -->
               <label>Per Transaction Fee:
-                <input type="text" class="js-transaction-fee form-control">
+                <input type="text" class="js-transaction-fee-dash form-control">
                 $<input type="text" class="js-transaction-fee-usd form-control">
               </label>
                 <label>Num of Transactions:
@@ -177,7 +177,7 @@
                 </div>
                 <div class="dd-source-wallet-balance">
                   <label>Current Balance:</label>
-                    <span class="js-funding-amount">--</span> mDash
+                    <span class="js-funding-amount">--</span> Dash
                     $<span class="js-funding-amount-usd">--</span>
                   <button class="js-funding-key-check btn btn-link">Recheck Balance</button>
                 </div>
@@ -234,7 +234,7 @@
               <pre class="js-airdrop-balances hidden fade"><code></code></pre>
             </div>
           </div>
-          <div class="js-csv-view hidden dd-step-row dd-wallet-distribution">
+          <div class="dd-step-row dd-wallet-distribution">
             <div class="dd-wallet-distribution-progress">
               <div class="js-paper-wallet-load progress">
                 <div class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
@@ -247,9 +247,17 @@
               wallets claimed
             </div>
             <div class="">
-              Users spent <span class="js-paper-wallet-balance-out">----</span> of <span class="js-paper-wallet-balance-in">---</span>
+              Users spent <span class="js-paper-wallet-balance-out-dash">----</span>
+              of
+              <span class="js-paper-wallet-balance-in-dash">---</span>
               <br>
-              Reclaimable Dash: <span class="js-paper-wallet-balance">---</span>
+              ($<span class="js-paper-wallet-balance-out-usd">----</span>
+              of
+              $<span class="js-paper-wallet-balance-in-usd">---</span>)
+              <br>
+              Reclaimable Dash:
+              <span class="js-paper-wallet-balance-dash">---</span>
+              ($<span class="js-paper-wallet-balance-usd">---</span>)
               <!--
               <br>
               $---/$---
@@ -261,20 +269,39 @@
               Latest scan: <span class="js-paper-wallet-most-recent">--/--/----</span>
             </div>
           </div>
-          <div class="js-csv-view dd-step-row hidden">
+          <div class="js-reclaim-view hidden dd-step-row">
             <h3>Reclaim funds</h3>
             <p>This will transfer remaining funds on unclaimed wallets to the wallet entered below:</p>
             <div class="dd-reclaim-dash">
-              <label>Funding Destination Public Key:
-                <input type="text" class="js-funding-key form-control"
-                 placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
-              </label>
+              <div class="dd-dist-qr-address">
+                <label>Scan this address to import funds, once reclaimed:</label>
+                <canvas class="js-reclaim-qr-private"></canvas>
+                <span class="js-reclaim-key-private"></span>
+              </div>
+              <div class="dd-dist-existing-address">
+                <label>Or input existing Public Key:</label>
+                <div>
+                  <input type="text" class="js-reclaim-key form-control"
+                    placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
+                </div>
+                <div class="dd-source-wallet-balance">
+                  <label>Current Balance:</label>
+                    <span class="js-reclaim-key-amount-dash">--</span> Dash
+                    $<span class="js-reclaim-key-amount-usd">--</span>
+                  <button class="js-reclaim-key-check btn btn-link">Recheck Balance</button>
+                </div>
+              </div>
               <div class="dd-reclaim-details">
                 <label>Amount of Dash to receive:
-                   <input type="text" class="js-paper-wallet-balance form-control" disabled>
+                   <input type="text" class="js-paper-wallet-balance-dash form-control" disabled>
+                   $<input type="text" class="js-paper-wallet-balance-usd form-control" disabled>
                 </label>
-                <label>Transaction Fees (suggested <span class="js-transaction-fees">---</span>):
-                  <input type="text" class="js-transaction-fee form-control">
+                <label>Transaction Fees
+                  (suggested <span class="js-transaction-fee-dash">---</span>
+                  /
+                  $<span class="js-transaction-fee-usd">---</span>):
+                  <input type="text" class="js-transaction-fee-dash form-control" disabled>
+                  $<input type="text" class="js-transaction-fee-usd form-control" disabled>
                 </label>
               </div>
             </div>
