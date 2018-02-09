@@ -14,7 +14,20 @@ See https://github.com/dashcommunity/proposal-dash-hive/blob/master/paper-wallet
 Installation & Usage
 -------
 
+This is a static web app. It may be loaded directly by your webserver or from localhost as a downloaded web app.
+
+Assuming that your webserver is configured to load `dashgiveaway.com` from `/srv/www`:
+
 ```bash
-bash ./install.sh
-open index.html
+pushd /srv/www/
+  git clone https://github.com/dashhive/dashdrop.html.git dashgiveaway.com
+
+  pushd dashgiveaway.com/
+    bash ./install.sh
+  popd
+popd
 ```
+
+Then your would visit https://dashgiveaway.com.
+
+Since this uses secure crypto APIs, https is required.
