@@ -20,7 +20,8 @@ $(function () {
   ];
 
   var config = {
-    insightBaseUrl: 'https://api.dashdrop.coolaj86.com/insight-api-dash'
+    insightBaseUrl: 'https://insight.dash.org/api'
+  // insightBaseUrl: 'https://api.dashdrop.coolaj86.com/insight-api-dash'
   , walletQuantity: 100
   , minTransactionFee: 1000 // 1000 // 0 seems to give the "insufficient priority" error
   , transactionFee: 1000 // 1000 // 0 seems to give the "insufficient priority" error
