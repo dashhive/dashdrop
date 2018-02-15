@@ -649,7 +649,7 @@ $(function () {
       var txObj = {
         utxos: utxos
       , srcs: data.reclaimKeypairs.map(function (kp) { return kp.privateKey; }).filter(Boolean)
-      , dst: data.fundingKey
+      , dst: data.reclaimKeypair.publicKey // data.reclaimKey
       };
       if (config.transactionFee) {
         txObj.fee = config.transactionFee;
@@ -672,7 +672,7 @@ $(function () {
 
     return nextBatch().then(function () {
       console.log("Transaction Batch", txResults);
-      $('.js-transaction-ids').text(results.map(function (tx) { return tx.txid; }).join('\n'));
+      $('.js-transaction-ids').text(txResults.map(function (tx) { return tx.txid; }).join('\n'));
       $('.js-reclaim-commit-complete').removeClass('hidden');
     });
   };
