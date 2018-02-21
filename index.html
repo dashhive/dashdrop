@@ -102,7 +102,7 @@
           <div class="dd-generate-new">
             <h4>Generate New</h4>
             <p>Input how many new, empty wallets you'd like to generate.</p>
-            <label> Number of wallets
+            <label class="dd-round-styled-input"> Number of wallets
             <input type="number"
               class="js-paper-wallet-quantity form-control"
               placeholder="ex: 10">
@@ -137,32 +137,32 @@
         <div class="js-csv-view dd-step-row">
           <div class="dd-dist-transaction-amounts">
             <label>Amount per Wallet:
-            <input type="text" class="js-paper-wallet-amount form-control"
-              placeholder="ex: 0.01">
-            $<input type="text" class="js-paper-wallet-amount-usd form-control"
-              placeholder="ex: 5.00">
-              </label>
+              <div class="dd-input-pair"><div class="dd-input-pair-left"><input type="text" class="js-paper-wallet-amount form-control"
+                  placeholder="ex: 0.01"><div class="dd-input-pair-unit">DASH</div></div><div class="dd-input-pair-right"><input type="text" class="js-paper-wallet-amount-usd form-control"
+                  placeholder="ex: 5.00"><div class="dd-input-pair-unit">USD</div>
+              </div></div>
+            </label>
               <!--
               <label><input type="radio" name="js-fee-schedule" value="100000"> InstantSend</label>
               <label><input type="radio" name="js-fee-schedule" value="10000"> 10000 mDash</label>
               <label><input type="radio" name="js-fee-schedule" value="1000" checked> 1000 mDash</label>
               -->
               <label>Per Transaction Fee:
-                <input type="text" class="js-transaction-fee-dash form-control">
-                $<input type="text" class="js-transaction-fee-usd form-control">
+                <div class="dd-input-pair"><div class="dd-input-pair-left"><input type="text" class="js-transaction-fee-dash form-control"><div class="dd-input-pair-unit">DASH</div></div><div class="dd-input-pair-right"><input type="text" class="js-transaction-fee-usd form-control"><div class="dd-input-pair-unit">USD</div>
+                </div></div>
               </label>
-                <label>Num of Transactions:
-              <input type="text" class="js-transaction-count form-control" disabled>
-                </label>
+              <label class="dd-dist-num-transactions">Num of Transactions:
+                <input type="text" class="js-transaction-count form-control" disabled>
+              </label>
               <label>Total:
-                <input type="text" class="js-transaction-total form-control" disabled>
-                $<input type="text" class="js-transaction-total-usd form-control" disabled>
+                <div class="dd-input-pair"><div class="dd-input-pair-left"><input type="text" class="js-transaction-total form-control" disabled><div class="dd-input-pair-unit">DASH</div></div><div class="dd-input-pair-right"><input type="text" class="js-transaction-total-usd form-control" disabled><div class="dd-input-pair-unit">USD</div>
+                </div></div>
               </label>
             </div>
             <div class="dd-dist-address ">
               <div class="dd-dist-qr-address">
                 <label>Send
-                  $<span class="js-transaction-total-usd">---</span>
+                  <span class="js-transaction-total-usd">---</span>
                   <span class="js-transaction-total">---</span>
                   to this address:</label>
                 <canvas class="js-funding-qr-public"></canvas>
@@ -295,15 +295,13 @@
               </div>
               <div class="dd-reclaim-details">
                 <label>Amount of Dash to receive:
-                   <input type="text" class="js-paper-wallet-balance-dash form-control" disabled>
-                   $<input type="text" class="js-paper-wallet-balance-usd form-control" disabled>
+                  <div class="dd-input-pair"><div class="dd-input-pair-left"><input type="text" class="js-paper-wallet-balance-dash form-control" disabled><div class="dd-input-pair-unit">DASH</div></div><div class="dd-input-pair-right"><input type="text" class="js-paper-wallet-balance-usd form-control" disabled><div class="dd-input-pair-unit">USD</div></div></div>
                 </label>
-                <label>Transaction Fees
-                  (suggested <span class="js-transaction-fee-dash">---</span>
+                <label>Transaction Fees:
+                  <div class="dd-input-pair"><div class="dd-input-pair-left"><input type="text" class="js-transaction-fee-dash form-control" disabled><div class="dd-input-pair-unit">DASH</div></div><div class="dd-input-pair-right"><input type="text" class="js-transaction-fee-usd form-control" disabled><div class="dd-input-pair-unit">USD</div>
+                  </div></div>(suggested <span class="js-transaction-fee-dash">---</span>
                   /
-                  $<span class="js-transaction-fee-usd">---</span>):
-                  <input type="text" class="js-transaction-fee-dash form-control" disabled>
-                  $<input type="text" class="js-transaction-fee-usd form-control" disabled>
+                  <span class="js-transaction-fee-usd">---</span>)
                 </label>
               </div>
             </div>

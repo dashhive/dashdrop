@@ -130,7 +130,7 @@ h4 {
     flex-wrap: wrap;
 }
 
-.dd-or {font-size: 1.5em;padding-top: 2em;}
+.dd-or {font-size: 1.5em;color: #8ca2b5;padding-top: 2em;}
 
 .dd-button-row {
     display: flex;
@@ -449,7 +449,9 @@ h4 {
 }
 
 .dd-dist-transaction-amounts label {
-    width: 21%;
+    width: 28%;
+    font-size: 0.9rem;
+    color: #8ca2b5;
 }
 
 .dd-csv-view textarea {
@@ -527,11 +529,13 @@ h4 {
 }
 
 .dd-reclaim-dash {
-    margin: 0 2em 0 2em;
+    /* margin: 0 2em 0 2em; */
 }
 
 .dd-reclaim-dash label {
     margin: 1.5em 0 1.5em 0;
+    width: 35%;
+    color: #8ca2b5;
 }
 
 .dd-source-wallet-balance .btn {
@@ -551,4 +555,99 @@ h4 {
     font-size: 1.2em;
     display:  flex;
     justify-content: flex-end;
+}
+
+.dd-dist-num-transactions {
+    display: none;
+
+}
+
+.dd-usd-unit {
+    display: block;
+    position: absolute;
+    left: -20px;
+}
+
+.dd-input-pair-unit {
+    position: absolute;
+    right: 0.5rem;
+    top: 0.85rem;
+    color: #8ca2b5;
+    font-weight: normal;
+    font-size: 0.9rem;
+}
+
+.dd-input-pair-left {
+    font-weight: 500;
+    width: 50%;
+    position: relative;
+    display: inline-block;
+}
+
+
+.dd-input-pair-right {
+    width: 50%;
+    display: inline-block;
+    position: relative;
+    font-weight: 500;
+}
+
+.dd-input-pair {
+    width:100%;
+    margin: 0.5rem 0 0.5rem 0;
+}
+
+
+.dd-input-pair-left input {
+    border-radius: 2rem 0 0 2rem;
+    height: 3rem;
+    padding-left: 1rem;
+}
+
+.dd-input-pair-right input {
+    border-radius: 0 2rem 2rem 0;
+    border-left: none;
+    height: 3rem;
+}
+
+.dd-input-pair-right .dd-input-pair-unit {
+    right: 1rem;
+}
+
+.dd-round-styled-input {
+    color: #8ca2b5;
+    width: 100%;
+    border-radius: 2em;
+    border: solid 1px #ddd;
+    position: relative;
+    height: 3em;
+    font-size: 0.9rem;
+    background: #F9F9FB;
+    padding-left: 1em;
+    font-weight: normal;
+    line-height: 3em;
+}
+
+label {}
+
+.dd-round-styled-input input {
+    width: 50%;
+    position: absolute;
+    display: inline;
+    right: 0;
+    height: 100%;
+    border: none;
+    border-left: solid 1px #ddd;
+    border-radius: 0 2rem 2rem 0;
+    padding-right: 1rem;
+    text-align: right;
+    font-size: 1.2em;
+}
+
+.dd-generate-new label {
+    width: 80%;
+}
+
+.dd-reclaim-details .dd-input-pair {
+    /* width: 80%; */
 }
