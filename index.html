@@ -275,22 +275,24 @@
             <h3>Reclaim funds</h3>
             <p>This will transfer remaining funds on unclaimed wallets to the wallet entered below:</p>
             <div class="dd-reclaim-dash">
-              <div class="dd-dist-qr-address">
-                <label>Scan this address to import funds, once reclaimed:</label>
-                <canvas class="js-reclaim-qr-private"></canvas>
-                <span class="js-reclaim-key-private"></span>
-              </div>
-              <div class="dd-dist-existing-address">
-                <label>Or input existing Public Key:</label>
-                <div>
-                  <input type="text" class="js-reclaim-key form-control"
-                    placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
+              <div class="dd-reclaim-dash-dest-wallet">
+                <div class="dd-dist-qr-address">
+                  <label>Scan this address to import funds, once reclaimed:</label>
+                  <canvas class="js-reclaim-qr-private"></canvas>
+                  <span class="js-reclaim-key-private"></span>
                 </div>
-                <div class="dd-source-wallet-balance">
-                  <label>Current Balance:</label>
-                    <span class="js-reclaim-key-amount-dash">--</span> Dash
-                    $<span class="js-reclaim-key-amount-usd">--</span>
-                  <button class="js-reclaim-key-check btn btn-link">Recheck Balance</button>
+                <div class="dd-dist-existing-address">
+                  <label>Or input existing Public Key:</label>
+                  <div>
+                    <input type="text" class="js-reclaim-key form-control"
+                      placeholder="ex: Xyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy">
+                  </div>
+                  <div class="dd-source-wallet-balance">
+                    <label>Current Balance:</label>
+                      <span class="js-reclaim-key-amount-dash">--</span> Dash
+                      $<span class="js-reclaim-key-amount-usd">--</span>
+                    <button class="js-reclaim-key-check btn btn-link">Recheck Balance</button>
+                  </div>
                 </div>
               </div>
               <div class="dd-reclaim-details">
