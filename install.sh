@@ -16,6 +16,10 @@ curl -fsSL bit.ly/node-installer | bash -s -- --no-dev-deps
 npm install -g uglify-js
 
 git clone https://github.com/dashevo/bitcore-lib-dash.git
+pushd bitcore-lib-dash/
+  # latest version doesn't load in browser, so we checkout one from january 2018
+  git checkout ab3b46b4aff1caf4d3c7fa0452ce7b88f052d3c5
+popd
 uglifyjs bitcore-lib-dash/bitcore-lib-dash.js > js/bitcore-lib-dash.min.js
 
 npm install qrcode
