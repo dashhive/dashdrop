@@ -17,8 +17,8 @@ npm install -g uglify-js
 
 git clone https://github.com/dashevo/bitcore-lib-dash.git
 pushd bitcore-lib-dash/
-  # latest version doesn't load in browser, so we checkout one from january 2018
-  git checkout ab3b46b4aff1caf4d3c7fa0452ce7b88f052d3c5
+  # latest version doesn't load in browser, so we checkout one from Feb 9th, 2018
+  git checkout 1301449839e19022dcbc6e1bd492d908047817e4
 popd
 uglifyjs bitcore-lib-dash/bitcore-lib-dash.js > js/bitcore-lib-dash.min.js
 
