@@ -218,6 +218,7 @@ $(function () {
       $('.js-transaction-commit-error').removeClass('hidden');
       $('button.js-transaction-commit').prop('disabled', true);
     }
+    DashDom._updateFundingQr(data.fundingKeyPublic);
   };
   DashDom.updateReclaimKey = function (ev) {
     var $el = $(this);
@@ -265,12 +266,6 @@ $(function () {
     console.log('$el', $el);
     console.log('$el.val()', $el.val());
     var keypair = DashDrop._keyToKeypair($el.val());
-    var qrPublic = new QRious({
-      element: document.querySelector('.js-funding-qr-public')
-    , value: keypair.publicKey
-    , size: 256
-    , background: '#CCFFFF'
-    });
     var qrPrivate;
     if (keypair.privateKey) {
       qrPrivate = new QRious({
@@ -281,6 +276,7 @@ $(function () {
     $('.js-funding-key-public').val(data.fundingKeypair.publicKey);
 
     DashDrop._updateFundingKey(keypair).then(function () {
+      DashDom._updateFundingQr(data.fundingKeyPublic);
       // whatever
       $('.js-transaction-fee-dash').val(DashDrop.toDash(config.transactionFee));
       $('.js-transaction-fee-dash').text(DashDrop.toDash(config.transactionFee));
@@ -296,6 +292,15 @@ $(function () {
         $('.js-reclaim-commit').prop('disabled', false);
       }
       DashDom.updateWalletAmount();
+    });
+  };
+  DashDom._updateFundingQr = function (fundingKeyPublic) {
+console.log('fundingTotal:', data.fundingTotal);
+    var qrPublic = new QRious({
+      element: document.querySelector('.js-funding-qr-public')
+    , value: 'dash:' + fundingKeyPublic + '?amount=' + (DashDrop.toDash(config.transactionTotal) || 0)
+    , size: 256
+    , background: '#CCFFFF'
     });
   };
   DashDom.estimateFee = function () {

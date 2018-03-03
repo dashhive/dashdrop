@@ -3,6 +3,10 @@
     display: none;
   }
 }
+body {
+  color: #999;
+}
+
 .dd-backdrop {
   background-color: #EFEFEF;
 }

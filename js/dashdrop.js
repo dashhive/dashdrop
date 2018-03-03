@@ -255,6 +255,8 @@
     DashDrop._updateFundingKey = function (keypair) {
       var addr = keypair.publicKey;
       data.fundingKey = keypair.privateKey || keypair.publicKey;
+      data.fundingKeyPublic = keypair.publicKey;
+      data.fundingKeyPair = keypair;
 
       var url = config.insightBaseUrl + '/addrs/:addrs/utxo'.replace(':addrs', addr);
       return window.fetch(url, { mode: 'cors' }).then(function (resp) {
