@@ -3,7 +3,7 @@ var DEBUG_DASH_AIRDROP = {};
 $(function () {
   'use strict';
 
-  var bitcore = require('bitcore-lib-dash');
+  var dashcore = require('@dashevo/dashcore-lib');
 
   var exampleCsv = [
     '# = 4'
@@ -127,7 +127,7 @@ $(function () {
 
     //data.privateKeys
     for (i = data.keypairs.length; i < config.walletQuantity; i += 1) {
-      bitkey = new bitcore.PrivateKey();
+      bitkey = new dashcore.PrivateKey();
       data.keypairs.push({
         privateKey: bitkey.toWIF()
       , publicKey: bitkey.toAddress().toString()
@@ -304,7 +304,7 @@ console.log('fundingTotal:', data.fundingTotal);
     });
   };
   DashDom.estimateFee = function () {
-    var bitkey = new bitcore.PrivateKey();
+    var bitkey = new dashcore.PrivateKey();
     var txOpts = {
       src: bitkey.toWIF()
     , dsts: data.keypairs.map(function (kp) { return kp.publicKey })

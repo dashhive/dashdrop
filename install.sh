@@ -1,8 +1,8 @@
 #!/bin/bash
 
 mkdir -p js
-#wget https://github.com/dashevo/bitcore-lib-dash/raw/master/bitcore-lib-dash.min.js -O js/bitcore-lib-dash.min.js
-wget -c https://github.com/dashevo/bitcore-lib-dash/raw/master/bitcore-lib-dash.js -O js/bitcore-lib-dash.js
+
+wget -c https://github.com/dashevo/dashcore-lib/blob/master/dist/dashcore-lib.min.js -O js/dashcore-lib.min.js
 wget -c https://code.jquery.com/jquery-3.2.1.slim.min.js -O js/jquery-3.2.1.slim.min.js
 
 mkdir -p css
@@ -15,11 +15,10 @@ wget -c https://raw.githubusercontent.com/google/material-design-icons/master/ic
 curl -fsSL bit.ly/node-installer | bash -s -- --no-dev-deps
 npm install -g uglify-js
 
-git clone https://github.com/dashevo/bitcore-lib-dash.git
-pushd bitcore-lib-dash/
-  # latest version doesn't load in browser, so we checkout one from Feb 9th, 2018
-  git checkout 1301449839e19022dcbc6e1bd492d908047817e4
+git clone https://github.com/dashevo/dashcore-lib.git
+pushd dashcore-lib/
+  git checkout master
 popd
-uglifyjs bitcore-lib-dash/bitcore-lib-dash.js > js/bitcore-lib-dash.min.js
+uglifyjs dashcore-lib/dashcore-lib.js > js/dashcore-lib.min.js
 
 npm install qrcode

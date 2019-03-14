@@ -2,11 +2,11 @@
 
 var PromiseA = require('bluebird');
 var requestAsync = PromiseA.promisify(require('request'));
-var bitcore = require('bitcore-lib-dash');
-//var privateKey = new bitcore.PrivateKey();
+var dashcore = require('@dashevo/dashcore-lib');
+//var privateKey = new dashcore.PrivateKey();
 var wif = require('./config.js').wif;
 
-var privateKey = new bitcore.PrivateKey(wif);
+var privateKey = new dashcore.PrivateKey(wif);
 
 var address = privateKey.toAddress();
 var addr = address.toString();
@@ -18,7 +18,7 @@ console.log(address.toJSON()); // raw hex
 console.log(address.toString()); // encoded (starts with X)
 
 function genKeyPair() {
-  var privateKey = new bitcore.PrivateKey();
+  var privateKey = new dashcore.PrivateKey();
   var priv = privateKey.toWIF();
   var addr = privateKey.toAddress().toString();
   console.log(addr + ':' + priv);
@@ -37,7 +37,7 @@ http://104.236.12.147:3001/insight-api-dash/addr/Xb3b7YK8QdAxSjTZcxs4Ej1yXozgtaP
 {"addrStr":"Xb3b7YK8QdAxSjTZcxs4Ej1yXozgtaPVav","balance":0.0001,"balanceSat":10000,"totalReceived":0.0001,"totalReceivedSat":10000,"totalSent":0,"totalSentSat":0,"unconfirmedBalance":0,"unconfirmedBalanceSat":0,"unconfirmedTxApperances":0,"txApperances":1,"transactions":["45aa039b07135f4c0273367f7031ab4c0c78ad290309dec4e91f0f3e8b7fed85"]}
 /*
 var wif = 'Kxr9tQED9H44gCmp6HAdmemAzU3n84H3dGkuWTKvE23JgHMW8gct';
-var address = new bitcore.PrivateKey(wif).toAddress();
+var address = new dashcore.PrivateKey(wif).toAddress();
 */
 
 var baseUrl = 'http://104.236.12.147:3001';
@@ -47,7 +47,7 @@ requestAsync({ url: baseUrl + '/insight-api-dash/addr/:addr/utxo'.replace(':addr
   var giveaway = 0.0001 * satoshio; // 8¢
   //var giveaway = 0.001 * satoshio; // 8¢
   var sum = 0;
-  var tx = new bitcore.Transaction();
+  var tx = new dashcore.Transaction();
   var inputs = [];
   console.log('Instant Send Fee (per input):', 0.001 * satoshio);
   // NOTE: In dash the fee is 0.001 per input according to

@@ -13,7 +13,7 @@
   "author": "AJ ONeal <coolaj86@gmail.com> (https://coolaj86.com/)",
   "license": "(MIT OR Apache-2.0)",
   "dependencies": {
-    "bitcore-lib-dash": "^0.15.0",
+    "@dashevo/dashcore-lib": "^0.16.9",
     "bluebird": "^3.5.1",
     "qrcode": "^1.2.0",
     "request": "^2.83.0"

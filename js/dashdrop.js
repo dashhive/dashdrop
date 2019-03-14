@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var bitcore = require('bitcore-lib-dash');
+  var dashcore = require('@dashevo/dashcore-lib');
   var SATOSHIS_PER_DASH = 100000000;
 
   function create() {
@@ -43,13 +43,13 @@
       data[key] = JSON.parse(store.getItem(name) || null);
 
       if (data[key] && data[key].privateKey) {
-        bitkey = new bitcore.PrivateKey(data[key].privateKey);
+        bitkey = new dashcore.PrivateKey(data[key].privateKey);
       } else {
         data[key] = null;
       }
 
       if (!data[key]) {
-        bitkey = new bitcore.PrivateKey();
+        bitkey = new dashcore.PrivateKey();
         data[key] = {
           publicKey: bitkey.toAddress().toString()
         , privateKey: bitkey.toWIF()
@@ -63,19 +63,19 @@
       return data[key];
     };
     DashDrop._privateToPublic = function (sk) {
-      return new bitcore.PrivateKey(sk).toAddress().toString();
+      return new dashcore.PrivateKey(sk).toAddress().toString();
     };
     DashDrop._keypairToPublicKey = function (sk) {
-      return sk.publicKey; //new bitcore.PrivateKey(sk).toAddress().toString();
+      return sk.publicKey; //new dashcore.PrivateKey(sk).toAddress().toString();
     };
     // opts = { utxo, src, dsts, amount, fee }
     DashDrop.estimateFee = function (opts) {
-      var tx = new bitcore.Transaction();
+      var tx = new dashcore.Transaction();
 
       opts.dsts.forEach(function (publicKey) {
-        tx.to(new bitcore.Address(publicKey), opts.amount);
+        tx.to(new dashcore.Address(publicKey), opts.amount);
       });
-      tx.change(opts.change || new bitcore.PrivateKey(opts.src).toAddress());
+      tx.change(opts.change || new dashcore.PrivateKey(opts.src).toAddress());
       opts.utxos.forEach(function (utxo) {
         tx.from(utxo);
       });
@@ -83,23 +83,23 @@
       return tx.getFee();
     };
     DashDrop.disburse = function (opts) {
-      var tx = new bitcore.Transaction();
+      var tx = new dashcore.Transaction();
 
       opts.dsts.forEach(function (publicKey) {
-        tx.to(new bitcore.Address(publicKey), opts.amount);
+        tx.to(new dashcore.Address(publicKey), opts.amount);
       });
-      tx.change(new bitcore.PrivateKey(opts.src).toAddress());
+      tx.change(new dashcore.PrivateKey(opts.src).toAddress());
       opts.utxos.forEach(function (utxo) {
         tx.from(utxo);
       });
       if ('number' === typeof opts.fee && !isNaN(opts.fee)) {
         tx.fee(opts.fee);
       }
-      return tx.sign(new bitcore.PrivateKey(opts.src)).serialize({ disableDustOutputs: true, disableSmallFees: true });
+      return tx.sign(new dashcore.PrivateKey(opts.src)).serialize({ disableDustOutputs: true, disableSmallFees: true });
     };
 
     DashDrop.createTx = function (opts) {
-      var tx = new bitcore.Transaction();
+      var tx = new dashcore.Transaction();
       var addr;
       //var sum = 0;
       //var total;
@@ -132,7 +132,7 @@
       tx.change(addr);
 
       opts.srcs.forEach(function (sk) {
-        tx.sign(new bitcore.PrivateKey(sk));
+        tx.sign(new dashcore.PrivateKey(sk));
       });
 
       return tx;
@@ -142,7 +142,7 @@
       var fee = 0;
       var len = utxos.length;
       var total = 0;
-      opts.dst = opts.dst || new bitcore.PrivateKey().toAddress().toString();
+      opts.dst = opts.dst || new dashcore.PrivateKey().toAddress().toString();
 
       function next() {
         if (!utxos.length) { if (cb) { cb(null, fee); } return fee; }
