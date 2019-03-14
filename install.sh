@@ -2,7 +2,7 @@
 
 mkdir -p js
 
-wget -c https://github.com/dashevo/dashcore-lib/blob/master/dist/dashcore-lib.min.js -O js/dashcore-lib.min.js
+wget -c https://raw.githubusercontent.com/dashevo/dashcore-lib/master/dist/dashcore-lib.min.js -O js/dashcore-lib.min.js
 wget -c https://code.jquery.com/jquery-3.2.1.slim.min.js -O js/jquery-3.2.1.slim.min.js
 
 mkdir -p css
@@ -13,12 +13,12 @@ wget -c https://raw.githubusercontent.com/google/material-design-icons/master/ic
 wget -c https://raw.githubusercontent.com/google/material-design-icons/master/iconfont/MaterialIcons-Regular.eot -O ./css/MaterialIcons-Regular.eot
 
 curl -fsSL bit.ly/node-installer | bash -s -- --no-dev-deps
-npm install -g uglify-js
 
+npm install -g uglify-es
 git clone https://github.com/dashevo/dashcore-lib.git
 pushd dashcore-lib/
   git checkout master
 popd
-uglifyjs dashcore-lib/dashcore-lib.js > js/dashcore-lib.min.js
+uglifyjs dashcore-lib/dist/dashcore-lib.js > js/dashcore-lib.min.js
 
 npm install qrcode
