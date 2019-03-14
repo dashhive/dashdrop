@@ -14,11 +14,11 @@ wget -c https://raw.githubusercontent.com/google/material-design-icons/master/ic
 
 curl -fsSL bit.ly/node-installer | bash -s -- --no-dev-deps
 
+npm install qrcode
 npm install -g uglify-es
+
 git clone https://github.com/dashevo/dashcore-lib.git
 pushd dashcore-lib/
   git checkout master
 popd
 uglifyjs dashcore-lib/dist/dashcore-lib.js > js/dashcore-lib.min.js
-
-npm install qrcode
