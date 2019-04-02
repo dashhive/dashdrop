@@ -4,7 +4,8 @@
   "description": "helps track the status of paper wallet give-aways, aka \"airdrops\"",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "bash ./install.sh; webpack --mode='development' js/app.js",
+    "clean": "bash ./clean.sh"
   },
   "repository": {
     "type": "git",

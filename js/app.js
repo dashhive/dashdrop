@@ -45,7 +45,8 @@ $(function () {
   , fundingUtxos: []
   , reclaimUtxos: []
   };
-  var DashDrop = window.DashDrop.create();
+  // var DashDrop = window.DashDrop.create();
+  var DashDrop = require('./dashdrop').DashDrop.create();
 
   var DashDom = {};
   DashDom.views = {};
@@ -658,7 +659,11 @@ console.log('fundingTotal:', data.fundingTotal);
       };
       if (config.transactionFee) {
         txObj.fee = config.transactionFee;
+        // override temporarily to get script working.  Not sure what's wrong with the fee calc
+        txObj.fee = 10000;
       }
+      // override temporarily to get script working.  Not sure what's wrong with the fee calc
+      txObj.fee = 10000;
       var rawTx = DashDrop.reclaimTx(txObj);
       var restTx = {
         url: config.insightBaseUrl + '/tx/send'

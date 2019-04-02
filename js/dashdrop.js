@@ -139,7 +139,8 @@
     };
     DashDrop.estimateReclaimFee = function (opts, cb) {
       var utxos = opts.utxos.slice();
-      var fee = 0;
+      // override temporarily to get script working.  Not sure what's wrong with the fee calc
+      var fee = 11000;
       var len = utxos.length;
       var total = 0;
       opts.dst = opts.dst || new dashcore.PrivateKey().toAddress().toString();
@@ -430,5 +431,6 @@
     return DashDrop;
   }
 
-  window.DashDrop = { create: create };
+  // window.DashDrop = { create: create };
+  exports.DashDrop = { create: create };
 }());
